@@ -10,14 +10,14 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { ThemeProvider } from '../src/context/ThemeContext';
+import { AuthProvider } from '../src/context/AuthContext';
 import { initI18n } from '../src/i18n';
 
 // Empêcher le splash de se masquer automatiquement avant que tout soit prêt
 SplashScreen.preventAutoHideAsync();
 
 /**
- * Root Layout — Phase 1.3 (ThemeProvider + fonts + i18n)
- * Phase 1.4 : AuthContext.Provider s'ajoutera ici (à l'intérieur de ThemeProvider)
+ * Root Layout — Phase 1.4 (ThemeProvider + AuthProvider + fonts + i18n)
  * Phase 1.6 : SplashScreen.hideAsync() après fonts + auth rehydratés
  */
 export default function RootLayout() {
@@ -48,11 +48,13 @@ export default function RootLayout() {
 
   return (
     <ThemeProvider>
-      <StatusBar style="auto" />
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" />
-        <Stack.Screen name="(app)" />
-      </Stack>
+      <AuthProvider>
+        <StatusBar style="auto" />
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(app)" />
+        </Stack>
+      </AuthProvider>
     </ThemeProvider>
   );
 }
