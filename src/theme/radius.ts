@@ -6,10 +6,10 @@
 import type { ThemeRadius } from '../types/theme';
 
 export const radius: ThemeRadius = {
-  xs: 4,    // badges
-  sm: 8,    // inputs, boutons
-  md: 12,   // cards
-  lg: 16,   // modals, bottom sheets
-  xl: 24,   // onboarding cards
+  xs: 4, // badges
+  sm: 8, // inputs, boutons
+  md: 12, // cards
+  lg: 16, // modals, bottom sheets
+  xl: 24, // onboarding cards
   full: 9999, // avatars, tag pills
 };

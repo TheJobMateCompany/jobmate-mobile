@@ -41,37 +41,37 @@ export interface TextStyle {
 }
 
 export interface ThemeTypography {
-  displayLarge: TextStyle;  // 32sp / 700 — Titres onboarding
+  displayLarge: TextStyle; // 32sp / 700 — Titres onboarding
   displayMedium: TextStyle; // 26sp / 700 — Titre de page
-  headingLarge: TextStyle;  // 22sp / 600 — Section header
+  headingLarge: TextStyle; // 22sp / 600 — Section header
   headingMedium: TextStyle; // 18sp / 600 — Card title, modal title
-  bodyLarge: TextStyle;     // 16sp / 400 — Corps principal
-  bodyMedium: TextStyle;    // 14sp / 400 — Descriptions, labels
-  bodySmall: TextStyle;     // 12sp / 400 — Méta-données
-  label: TextStyle;         // 13sp / 500 — Labels bouton, tabs
-  caption: TextStyle;       // 11sp / 400 — Légendes
+  bodyLarge: TextStyle; // 16sp / 400 — Corps principal
+  bodyMedium: TextStyle; // 14sp / 400 — Descriptions, labels
+  bodySmall: TextStyle; // 12sp / 400 — Méta-données
+  label: TextStyle; // 13sp / 500 — Labels bouton, tabs
+  caption: TextStyle; // 11sp / 400 — Légendes
 }
 
 // ─── Espacement ───────────────────────────────────────────────────────────────
 
 export interface ThemeSpacing {
-  xs: number;   // 4
-  sm: number;   // 8
-  md: number;   // 16
-  lg: number;   // 24
-  xl: number;   // 32
-  xxl: number;  // 48
+  xs: number; // 4
+  sm: number; // 8
+  md: number; // 16
+  lg: number; // 24
+  xl: number; // 32
+  xxl: number; // 48
 }
 
 // ─── Border radius ────────────────────────────────────────────────────────────
 
 export interface ThemeRadius {
-  xs: number;    // 4  — badges
-  sm: number;    // 8  — inputs, boutons
-  md: number;    // 12 — cards
-  lg: number;    // 16 — modals bottom sheet
-  xl: number;    // 24 — onboarding cards
-  full: number;  // 9999 — avatars, tag pills
+  xs: number; // 4  — badges
+  sm: number; // 8  — inputs, boutons
+  md: number; // 12 — cards
+  lg: number; // 16 — modals bottom sheet
+  xl: number; // 24 — onboarding cards
+  full: number; // 9999 — avatars, tag pills
 }
 
 // ─── Ombres ───────────────────────────────────────────────────────────────────

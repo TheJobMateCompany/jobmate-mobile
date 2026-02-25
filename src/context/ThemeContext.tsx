@@ -6,14 +6,7 @@
  * - Expose : theme (tokens complets), mode, setMode()
  */
 
-import React, {
-  createContext,
-  useCallback,
-  useContext,
-  useEffect,
-  useMemo,
-  useState,
-} from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { useColorScheme } from 'react-native';
 import { getTheme } from '../theme';
 import { getPreference, savePreference, STORAGE_KEYS } from '../lib/storage';
