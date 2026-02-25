@@ -1,15 +1,56 @@
-﻿import { View, Text, StyleSheet } from 'react-native';
+﻿/**
+ * Search Config new — Phase 3.7
+ *
+ * Création d'une nouvelle configuration de recherche.
+ * Utilise SearchConfigForm (composant partagé).
+ * createConfig() → router.back() en cas de succès.
+ */
 
-// TODO Nouvelle config — Phase 3
-export default function Screen() {
+import { useCallback } from 'react';
+import { Alert, ScrollView } from 'react-native';
+import { router, Stack } from 'expo-router';
+import { useSearchConfigs } from '@/hooks/useSearchConfigs';
+import { useTheme } from '@/hooks/useTheme';
+import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
+import { SearchConfigForm } from '@/components/profile/SearchConfigForm';
+import type { CreateSearchConfigInput } from '@/types/api';
+
+export default function NewSearchConfigScreen() {
+  const { spacing } = useTheme();
+  const { isSubmitting, createConfig } = useSearchConfigs();
+
+  const handleSubmit = useCallback(
+    async (input: CreateSearchConfigInput) => {
+      try {
+        await createConfig(input);
+        router.back();
+      } catch {
+        Alert.alert('Erreur', 'Impossible de créer la configuration. Réessayez.');
+      }
+    },
+    [createConfig],
+  );
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Nouvelle config — Phase 3</Text>
-    </View>
+    <ScreenWrapper padded={false}>
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: 'Nouvelle configuration',
+          headerBackTitle: 'Retour',
+        }}
+      />
+      <ScrollView
+        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <SearchConfigForm
+          onSubmit={handleSubmit}
+          isLoading={isSubmitting}
+          submitLabel="Créer la configuration"
+        />
+      </ScrollView>
+    </ScreenWrapper>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
-  text: { color: '#4F46E5', fontSize: 16, fontWeight: '600' },
-});

@@ -10,167 +10,108 @@ export const ME_QUERY = /* GraphQL */ `
     me {
       id
       email
-      firstName
-      lastName
       createdAt
+      profile {
+        id
+        fullName
+        status
+        skills
+        experience
+        projects
+        education
+        certifications
+        cvUrl
+      }
     }
   }
 `;
 
 // ─── Profile ───────────────────────────────────────────────────────────────────
 
-export const GET_PROFILE_QUERY = /* GraphQL */ `
-  query GetProfile {
-    profile {
+/**
+ * Retourne le profil via gRPC → profile-service (champ `myProfile`).
+ * Alternative à me { profile } — résultat identique, source gRPC directe.
+ */
+export const MY_PROFILE_QUERY = /* GraphQL */ `
+  query MyProfile {
+    myProfile {
       id
-      userId
-      title
-      bio
-      location
-      phone
-      cvUrl
+      fullName
+      status
       skills
-      languages
-      experiences {
-        id
-        company
-        position
-        startDate
-        endDate
-        description
-      }
-      educations {
-        id
-        school
-        degree
-        field
-        startDate
-        endDate
-      }
+      experience
+      projects
+      education
+      certifications
+      cvUrl
     }
   }
 `;
 
 // ─── Search Configs ────────────────────────────────────────────────────────────
 
-export const GET_SEARCH_CONFIGS_QUERY = /* GraphQL */ `
-  query GetSearchConfigs {
-    searchConfigs {
+/** Liste les configs de recherche actives de l'utilisateur courant */
+export const MY_SEARCH_CONFIGS_QUERY = /* GraphQL */ `
+  query MySearchConfigs {
+    mySearchConfigs {
       id
-      name
-      jobTitle
-      location
-      remote
+      jobTitles
+      locations
+      remotePolicy
+      keywords
+      redFlags
       salaryMin
       salaryMax
-      contractTypes
+      startDate
+      duration
       coverLetterTemplate
       isActive
       createdAt
+      updatedAt
     }
   }
 `;
 
 // ─── Job Feed ──────────────────────────────────────────────────────────────────
 
-export const GET_JOB_FEED_QUERY = /* GraphQL */ `
-  query GetJobFeed($limit: Int, $offset: Int) {
-    jobFeed(limit: $limit, offset: $offset) {
+/**
+ * Liste les offres scrapées pour l'utilisateur.
+ * rawData contient le payload JSON brut du scraper (title, company, location, etc.)
+ * Utilisé par useJobFeed (Phase 4.1).
+ */
+export const JOB_FEED_QUERY = /* GraphQL */ `
+  query JobFeed($status: JobStatus) {
+    jobFeed(status: $status) {
       id
-      title
-      company
-      location
-      contractType
-      salary
-      score
+      rawData
+      sourceUrl
       status
-      discoveredAt
-    }
-  }
-`;
-
-export const GET_JOB_OFFER_QUERY = /* GraphQL */ `
-  query GetJobOffer($id: ID!) {
-    jobOffer(id: $id) {
-      id
-      title
-      company
-      location
-      contractType
-      salary
-      description
-      url
-      score
-      pros
-      cons
-      coverLetter
-      cvSuggestions
-      status
-      searchConfigId
-      discoveredAt
+      createdAt
     }
   }
 `;
 
 // ─── Applications (Kanban) ─────────────────────────────────────────────────────
 
-export const GET_APPLICATIONS_QUERY = /* GraphQL */ `
-  query GetApplications {
-    applications {
+/**
+ * Liste les candidatures Kanban de l'utilisateur.
+ * Utilisé par useApplications (Phase 5.1).
+ * relanceReminderAt = alias GraphQL de la colonne applications.relance_reminder_at
+ */
+export const MY_APPLICATIONS_QUERY = /* GraphQL */ `
+  query MyApplications($status: ApplicationStatus) {
+    myApplications(status: $status) {
       id
-      status
-      notes
-      rating
-      reminderAt
-      analysis
+      currentStatus
+      aiAnalysis
+      generatedCoverLetter
+      userNotes
+      userRating
+      relanceReminderAt
+      jobFeedId
+      historyLog
       createdAt
       updatedAt
-      jobOffer {
-        id
-        title
-        company
-        location
-        score
-      }
-      history {
-        from
-        to
-        at
-      }
-    }
-  }
-`;
-
-export const GET_APPLICATION_QUERY = /* GraphQL */ `
-  query GetApplication($id: ID!) {
-    application(id: $id) {
-      id
-      status
-      notes
-      rating
-      reminderAt
-      analysis
-      createdAt
-      updatedAt
-      jobOffer {
-        id
-        title
-        company
-        location
-        contractType
-        description
-        url
-        score
-        pros
-        cons
-        coverLetter
-        cvSuggestions
-      }
-      history {
-        from
-        to
-        at
-      }
     }
   }
 `;

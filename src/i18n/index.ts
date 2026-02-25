@@ -49,9 +49,10 @@ async function resolveInitialLanguage(): Promise<SupportedLanguage> {
 
   // 2. Détecter la langue système
   const locales = getLocales();
+  // languageCode peut être 'fr', 'fr-FR', 'en-US', etc.
   const systemLang = locales[0]?.languageCode ?? 'en';
 
-  if (systemLang === 'fr') return 'fr';
+  if (systemLang.startsWith('fr')) return 'fr';
   return 'en';
 }
 
@@ -81,6 +82,9 @@ export function getCurrentLanguage(): SupportedLanguage {
  * À appeler UNE SEULE FOIS dans app/_layout.tsx avant le rendu.
  */
 export async function initI18n(): Promise<void> {
+  // Eviter la double-initialisation (Fast Refresh en développement)
+  if (i18n.isInitialized) return;
+
   const lng = await resolveInitialLanguage();
 
   await i18n.use(initReactI18next).init({

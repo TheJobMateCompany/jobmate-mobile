@@ -2,16 +2,12 @@ import { useEffect } from 'react';
 import { View, ActivityIndicator } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { useAuth } from '../../src/context/AuthContext';
+import { useTheme } from '../../src/hooks/useTheme';
 import { isTokenExpired } from '../../src/lib/validators';
 
-/**
- * (app)/_layout.tsx — Phase 1.4 : guard d'authentification
- * Si isLoading → spinner centré
- * Si !token ou JWT expiré → redirect /(auth)/login
- * Sinon → Tab Navigator (icônes en Phase 2)
- */
 export default function AppLayout() {
   const { token, isLoading } = useAuth();
+  const { colors } = useTheme();
 
   useEffect(() => {
     if (isLoading) return;
@@ -22,15 +18,22 @@ export default function AppLayout() {
 
   if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-        <ActivityIndicator size="large" />
+      <View
+        style={{
+          flex: 1,
+          justifyContent: 'center',
+          alignItems: 'center',
+          backgroundColor: colors.background,
+        }}
+      >
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   if (!token || isTokenExpired(token)) {
-    // Redirect en cours via useEffect, on ne rend rien
-    return null;
+    // Redirect en cours via useEffect, fond coloré pour éviter le flash blanc
+    return <View style={{ flex: 1, backgroundColor: colors.background }} />;
   }
 
   return (

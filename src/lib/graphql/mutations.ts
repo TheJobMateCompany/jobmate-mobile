@@ -1,6 +1,7 @@
-/**
- * Mutations GraphQL — à compléter au fil des phases
+﻿/**
+ * Mutations GraphQL — JobMate Mobile
  * Référence : docs/API_DOCUMENTATION.md
+ * Source de vérité : jobmate-backend/gateway/src/schema/typeDefs.js
  */
 
 // ─── Auth ──────────────────────────────────────────────────────────────────────
@@ -12,8 +13,6 @@ export const LOGIN_MUTATION = /* GraphQL */ `
       user {
         id
         email
-        firstName
-        lastName
         createdAt
       }
     }
@@ -21,14 +20,12 @@ export const LOGIN_MUTATION = /* GraphQL */ `
 `;
 
 export const REGISTER_MUTATION = /* GraphQL */ `
-  mutation Register($email: String!, $password: String!, $firstName: String!, $lastName: String!) {
-    register(email: $email, password: $password, firstName: $firstName, lastName: $lastName) {
+  mutation Register($email: String!, $password: String!) {
+    register(email: $email, password: $password) {
       token
       user {
         id
         email
-        firstName
-        lastName
         createdAt
       }
     }
@@ -41,12 +38,14 @@ export const UPDATE_PROFILE_MUTATION = /* GraphQL */ `
   mutation UpdateProfile($input: UpdateProfileInput!) {
     updateProfile(input: $input) {
       id
-      title
-      bio
-      location
-      phone
+      fullName
+      status
       skills
-      languages
+      experience
+      projects
+      education
+      certifications
+      cvUrl
     }
   }
 `;
@@ -55,6 +54,7 @@ export const UPLOAD_CV_MUTATION = /* GraphQL */ `
   mutation UploadCV($file: Upload!) {
     uploadCV(file: $file) {
       cvUrl
+      message
     }
   }
 `;
@@ -62,36 +62,42 @@ export const UPLOAD_CV_MUTATION = /* GraphQL */ `
 // ─── Search Config ─────────────────────────────────────────────────────────────
 
 export const CREATE_SEARCH_CONFIG_MUTATION = /* GraphQL */ `
-  mutation CreateSearchConfig($input: SearchConfigInput!) {
+  mutation CreateSearchConfig($input: CreateSearchConfigInput!) {
     createSearchConfig(input: $input) {
       id
-      name
-      jobTitle
-      location
-      remote
+      jobTitles
+      locations
+      remotePolicy
+      keywords
+      redFlags
       salaryMin
       salaryMax
-      contractTypes
+      startDate
+      duration
       coverLetterTemplate
       isActive
       createdAt
+      updatedAt
     }
   }
 `;
 
 export const UPDATE_SEARCH_CONFIG_MUTATION = /* GraphQL */ `
-  mutation UpdateSearchConfig($id: ID!, $input: SearchConfigInput!) {
+  mutation UpdateSearchConfig($id: ID!, $input: UpdateSearchConfigInput!) {
     updateSearchConfig(id: $id, input: $input) {
       id
-      name
-      jobTitle
-      location
-      remote
+      jobTitles
+      locations
+      remotePolicy
+      keywords
+      redFlags
       salaryMin
       salaryMax
-      contractTypes
+      startDate
+      duration
       coverLetterTemplate
       isActive
+      updatedAt
     }
   }
 `;
@@ -105,17 +111,17 @@ export const DELETE_SEARCH_CONFIG_MUTATION = /* GraphQL */ `
 // ─── Job Feed ──────────────────────────────────────────────────────────────────
 
 export const APPROVE_JOB_MUTATION = /* GraphQL */ `
-  mutation ApproveJob($id: ID!) {
-    approveJob(id: $id) {
+  mutation ApproveJob($jobFeedId: ID!) {
+    approveJob(jobFeedId: $jobFeedId) {
       id
-      status
+      currentStatus
     }
   }
 `;
 
 export const REJECT_JOB_MUTATION = /* GraphQL */ `
-  mutation RejectJob($id: ID!) {
-    rejectJob(id: $id) {
+  mutation RejectJob($jobFeedId: ID!) {
+    rejectJob(jobFeedId: $jobFeedId) {
       id
       status
     }
@@ -124,27 +130,39 @@ export const REJECT_JOB_MUTATION = /* GraphQL */ `
 
 // ─── Application (Kanban) ──────────────────────────────────────────────────────
 
-export const MOVE_APPLICATION_MUTATION = /* GraphQL */ `
-  mutation MoveApplication($id: ID!, $status: KanbanStatus!) {
-    moveApplication(id: $id, status: $status) {
+export const MOVE_CARD_MUTATION = /* GraphQL */ `
+  mutation MoveCard($applicationId: ID!, $newStatus: ApplicationStatus!) {
+    moveCard(applicationId: $applicationId, newStatus: $newStatus) {
       id
-      status
-      history {
-        from
-        to
-        at
-      }
+      currentStatus
+      historyLog
     }
   }
 `;
 
-export const UPDATE_APPLICATION_NOTES_MUTATION = /* GraphQL */ `
-  mutation UpdateApplicationNotes($id: ID!, $notes: String, $rating: Int, $reminderAt: String) {
-    updateApplicationNotes(id: $id, notes: $notes, rating: $rating, reminderAt: $reminderAt) {
+export const ADD_NOTE_MUTATION = /* GraphQL */ `
+  mutation AddNote($applicationId: ID!, $note: String!) {
+    addNote(applicationId: $applicationId, note: $note) {
       id
-      notes
-      rating
-      reminderAt
+      userNotes
+    }
+  }
+`;
+
+export const RATE_APPLICATION_MUTATION = /* GraphQL */ `
+  mutation RateApplication($applicationId: ID!, $rating: Int!) {
+    rateApplication(applicationId: $applicationId, rating: $rating) {
+      id
+      userRating
+    }
+  }
+`;
+
+export const SET_RELANCE_REMINDER_MUTATION = /* GraphQL */ `
+  mutation SetRelanceReminder($applicationId: ID!, $remindAt: String!) {
+    setRelanceReminder(applicationId: $applicationId, remindAt: $remindAt) {
+      id
+      relanceReminderAt
     }
   }
 `;

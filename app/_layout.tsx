@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
@@ -13,8 +14,13 @@ import { ThemeProvider } from '../src/context/ThemeContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { initI18n } from '../src/i18n';
 
+// ── Log module-level : confirme que le fichier est chargé par Metro ──────────
+console.log('[Layout] Module loaded ✓');
+
 // Empêcher le splash de se masquer automatiquement avant que tout soit prêt
-SplashScreen.preventAutoHideAsync();
+SplashScreen.preventAutoHideAsync().catch((e) =>
+  console.warn('[Layout] preventAutoHideAsync error:', e),
+);
 
 /**
  * Contrôleur interne : masque le splash quand fonts + i18n + auth sont tous prêts.
@@ -24,7 +30,9 @@ function SplashController({ fontsReady, i18nReady }: { fontsReady: boolean; i18n
   const { isLoading: authLoading } = useAuth();
 
   useEffect(() => {
+    console.log('[Splash]', { fontsReady, i18nReady, authLoading });
     if (fontsReady && i18nReady && !authLoading) {
+      console.log('[Splash] All ready → hiding splash screen');
       void SplashScreen.hideAsync();
     }
   }, [fontsReady, i18nReady, authLoading]);
@@ -45,29 +53,40 @@ export default function RootLayout() {
   });
   const [i18nReady, setI18nReady] = useState(false);
 
+  console.log('[Layout] Render —', { fontsLoaded, fontError: !!fontError, i18nReady });
+
   // Initialiser i18n (AsyncStorage → expo-localization → 'en')
   useEffect(() => {
-    void initI18n().then(() => setI18nReady(true));
+    console.log('[i18n] Initializing...');
+    void initI18n()
+      .then(() => {
+        console.log('[i18n] Ready');
+        setI18nReady(true);
+      })
+      .catch((err: unknown) => {
+        console.warn('[i18n] Init error (ignored):', err);
+        setI18nReady(true);
+      });
   }, []);
 
   const fontsReady = fontsLoaded || !!fontError;
 
-  // Garde : ne rien rendre avant que les ressources critiques soient disponibles
-  if (!fontsReady || !i18nReady) {
-    return null;
-  }
-
+  // Pas de garde return null — le splash natif couvre l'UI pendant le chargement.
+  // SplashController le masque dès que fonts + i18n + auth sont prêts.
   return (
-    <ThemeProvider>
-      <AuthProvider>
-        {/* SplashController a accès à useAuth() ici, à l'intérieur de AuthProvider */}
-        <SplashController fontsReady={fontsReady} i18nReady={i18nReady} />
-        <StatusBar style="auto" />
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(app)" />
-        </Stack>
-      </AuthProvider>
-    </ThemeProvider>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <ThemeProvider>
+        <AuthProvider>
+          {/* SplashController a accès à useAuth() ici, à l'intérieur de AuthProvider */}
+          <SplashController fontsReady={fontsReady} i18nReady={i18nReady} />
+          <StatusBar style="auto" />
+          <Stack screenOptions={{ headerShown: false }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="(auth)" />
+            <Stack.Screen name="(app)" />
+          </Stack>
+        </AuthProvider>
+      </ThemeProvider>
+    </GestureHandlerRootView>
   );
 }

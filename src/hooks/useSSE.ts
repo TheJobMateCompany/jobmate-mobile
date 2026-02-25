@@ -25,7 +25,7 @@ export interface UseSSEReturn {
    *
    * @example
    * useEffect(() => {
-   *   const unsub = subscribe('job_discovered', (data) => { ... });
+   *   const unsub = subscribe('JOB_DISCOVERED', (data) => { ... });
    *   return unsub;
    * }, [subscribe]);
    */

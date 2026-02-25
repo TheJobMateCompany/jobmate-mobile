@@ -52,11 +52,14 @@ export async function gqlRequest<T>(
     body: JSON.stringify({ query, variables }),
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
+  // Tenter de lire le corps JSON même en cas d'erreur HTTP.
+  // Les serveurs GraphQL retournent parfois un 400 avec { errors: [...] } utile.
+  const json: GQLResponse<T> = await response.json().catch(() => ({}));
 
-  const json: GQLResponse<T> = await response.json();
+  if (!response.ok) {
+    const gqlMessage = json.errors?.[0]?.message;
+    throw new Error(gqlMessage ?? `HTTP ${response.status}: ${response.statusText}`);
+  }
 
   if (json.errors && json.errors.length > 0) {
     throw new Error(json.errors[0].message);

@@ -15,121 +15,189 @@ export interface AuthPayload {
 export interface User {
   id: string;
   email: string;
-  firstName: string;
-  lastName: string;
   createdAt: string;
+  profile: Profile | null;
 }
 
 // ─── Profile ───────────────────────────────────────────────────────────────────
 
+/**
+ * Les champs JSON (skills, experience, projects, education, certifications)
+ * sont des tableaux d'objets arbitraires côté backend (JSON PostgreSQL).
+ * On les type en `unknown[]` pour protéger TypeScript sans casser la flexibilité.
+ */
+export type ProfileStatus = 'STUDENT' | 'JUNIOR' | 'MID' | 'SENIOR' | 'OPEN_TO_WORK';
+
 export interface Profile {
   id: string;
-  userId: string;
-  title: string | null;
-  bio: string | null;
-  location: string | null;
-  phone: string | null;
+  fullName: string | null;
+  status: ProfileStatus | null;
+  skills: unknown[] | null;
+  experience: unknown[] | null;
+  projects: unknown[] | null;
+  education: unknown[] | null;
+  certifications: unknown[] | null;
   cvUrl: string | null;
-  skills: string[];
-  languages: string[];
-  experiences: Experience[];
-  educations: Education[];
 }
 
-export interface Experience {
-  id: string;
-  company: string;
-  position: string;
-  startDate: string;
-  endDate: string | null;
-  description: string | null;
-}
-
-export interface Education {
-  id: string;
-  school: string;
-  degree: string;
-  field: string;
-  startDate: string;
-  endDate: string | null;
+export interface UpdateProfileInput {
+  fullName?: string;
+  status?: ProfileStatus;
+  skills?: unknown[];
+  experience?: unknown[];
+  projects?: unknown[];
+  education?: unknown[];
+  certifications?: unknown[];
 }
 
 // ─── Search Config ─────────────────────────────────────────────────────────────
 
+/**
+ * RemotePolicy — enum GraphQL backend (remote_policy PostgreSQL)
+ * REMOTE = full remote, HYBRID = partial, ON_SITE = in-office only
+ */
+export type RemotePolicy = 'REMOTE' | 'HYBRID' | 'ON_SITE';
+
+/** Correspond exactement au type SearchConfig du schéma GraphQL backend */
 export interface SearchConfig {
   id: string;
-  userId: string;
-  name: string;
-  jobTitle: string;
-  location: string | null;
-  remote: 'FULL' | 'PARTIAL' | 'NO' | null;
+  jobTitles: string[];
+  locations: string[];
+  remotePolicy: RemotePolicy;
+  keywords: string[];
+  redFlags: string[];
   salaryMin: number | null;
   salaryMax: number | null;
-  contractTypes: ContractType[];
+  /** Date de début souhaitée pour le poste (format ISO date string, ex: "2026-06-01") */
+  startDate: string | null;
+  /** Type de contrat ou durée (ex: "CDI", "Stage 6 mois") */
+  duration: string | null;
   coverLetterTemplate: string | null;
   isActive: boolean;
   createdAt: string;
+  updatedAt: string;
 }
 
-export type ContractType = 'CDI' | 'CDD' | 'FREELANCE' | 'ALTERNANCE' | 'STAGE';
+export interface CreateSearchConfigInput {
+  jobTitles: string[];
+  locations: string[];
+  remotePolicy?: RemotePolicy;
+  keywords?: string[];
+  redFlags?: string[];
+  salaryMin?: number;
+  salaryMax?: number;
+  startDate?: string;
+  duration?: string;
+  coverLetterTemplate?: string;
+}
 
-// ─── Job Offer ─────────────────────────────────────────────────────────────────
+export interface UpdateSearchConfigInput {
+  jobTitles?: string[];
+  locations?: string[];
+  remotePolicy?: RemotePolicy;
+  keywords?: string[];
+  redFlags?: string[];
+  salaryMin?: number | null;
+  salaryMax?: number | null;
+  startDate?: string | null;
+  duration?: string | null;
+  coverLetterTemplate?: string | null;
+}
 
+// ─── Job Feed ─────────────────────────────────────────────────────────────────
+
+/** Statut d'une offre dans la file d'attente (job_status PostgreSQL) */
+export type JobStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
+
+/**
+ * Réponse réelle de la query `jobFeed` — rawData est un JSON brut venant du scraper.
+ * Contient généralement : title, company, location, description, salary, etc.
+ */
+export interface JobFeedItem {
+  id: string;
+  rawData: Record<string, unknown>;
+  sourceUrl: string | null;
+  status: JobStatus;
+  createdAt: string;
+}
+
+/**
+ * Représentation enrichie d'une offre (parsée depuis rawData + données analysées
+ * via l'IA dans applications.ai_analysis). Utilisé en affichage côté mobile.
+ */
 export interface JobOffer {
   id: string;
   title: string;
   company: string;
   location: string | null;
-  contractType: ContractType | null;
   salary: string | null;
   description: string;
-  url: string;
-  score: number;
-  pros: string[];
-  cons: string[];
-  coverLetter: string | null;
-  cvSuggestions: string[];
-  status: JobOfferStatus;
-  searchConfigId: string;
-  discoveredAt: string;
+  url: string | null;
+  status: JobStatus;
+  createdAt: string;
 }
-
-export type JobOfferStatus = 'PENDING' | 'APPROVED' | 'REJECTED';
 
 // ─── Application (Kanban) ──────────────────────────────────────────────────────
 
-export interface Application {
-  id: string;
-  userId: string;
-  jobOfferId: string;
-  jobOffer: JobOffer;
-  status: KanbanStatus;
-  notes: string | null;
-  rating: number | null;
-  reminderAt: string | null;
-  analysis: string | null;
-  history: StatusTransition[];
-  createdAt: string;
-  updatedAt: string;
-}
-
-export type KanbanStatus =
-  | 'INTERESTED'
+/**
+ * Statuts Kanban — enum application_status PostgreSQL.
+ * Machine à états : TO_APPLY → APPLIED → INTERVIEW → OFFER → HIRED
+ *                                   ↓           ↓           ↓        ↓
+ *                                REJECTED    REJECTED   REJECTED  REJECTED
+ */
+export type ApplicationStatus =
+  | 'TO_APPLY'
   | 'APPLIED'
   | 'INTERVIEW'
   | 'OFFER'
   | 'REJECTED'
-  | 'WITHDRAWN';
+  | 'HIRED';
 
 export interface StatusTransition {
-  from: KanbanStatus;
-  to: KanbanStatus;
+  from: ApplicationStatus;
+  to: ApplicationStatus;
   at: string;
+}
+
+/**
+ * Candidature active post-approbation — données CRM Kanban.
+ * Correspond au type ApplicationStatus & champs de la table `applications`.
+ */
+export interface Application {
+  id: string;
+  userId: string;
+  /** Référence à job_feed.id — null pour les candidatures manuelles */
+  jobFeedId: string | null;
+  currentStatus: ApplicationStatus;
+  /** JSON : { score, pros, cons, suggested_cv_content } — rempli par l'AI Coach */
+  aiAnalysis: {
+    score?: number;
+    pros?: string[];
+    cons?: string[];
+    suggested_cv_content?: string;
+  } | null;
+  generatedCoverLetter: string | null;
+  userNotes: string | null;
+  userRating: number | null;
+  relanceAt: string | null;
+  historyLog: StatusTransition[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ─── SSE Events ────────────────────────────────────────────────────────────────
 
-export type SSEEventType = 'job_discovered' | 'job_scored' | 'cv_parsed' | 'ping';
+/**
+ * Types d'événements SSE émis par la Gateway (champ `type` du payload JSON).
+ * Ces valeurs correspondent aux messages Redis transformés dans gateway/src/index.js.
+ *
+ * Redis channel → SSE type
+ * EVENT_JOB_DISCOVERED → 'JOB_DISCOVERED'
+ * EVENT_CV_PARSED      → 'CV_PARSED'
+ * EVENT_ANALYSIS_DONE  → 'ANALYSIS_DONE'
+ * EVENT_CARD_MOVED     → 'CARD_MOVED'
+ */
+export type SSEEventType = 'JOB_DISCOVERED' | 'CV_PARSED' | 'ANALYSIS_DONE' | 'CARD_MOVED';
 
 export interface SSEEvent<T = unknown> {
   type: SSEEventType;

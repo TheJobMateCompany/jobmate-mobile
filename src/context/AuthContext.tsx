@@ -53,22 +53,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   // Rehydratation au montage : lecture SecureStore + vérification expiration JWT
   useEffect(() => {
     async function rehydrate() {
+      console.log('[Auth] Rehydrating...');
       try {
         const storedToken = await getToken();
 
         if (storedToken && !isTokenExpired(storedToken)) {
           // Token valide → restaurer l'utilisateur depuis AsyncStorage
+          console.log('[Auth] Valid token found, restoring user');
           const storedUser = await getPreference(USER_STORAGE_KEY);
           setToken(storedToken);
           setUser(storedUser ? (JSON.parse(storedUser) as User) : null);
         } else if (storedToken) {
           // Token expiré → nettoyage silencieux
+          console.log('[Auth] Token expired, clearing storage');
           await deleteToken();
           await deletePreference(USER_STORAGE_KEY);
+        } else {
+          console.log('[Auth] No token found');
         }
-      } catch {
+      } catch (err) {
         // Erreur de lecture → état déconnecté
+        console.warn('[Auth] Rehydration error:', err);
       } finally {
+        console.log('[Auth] Rehydration done → isLoading = false');
         setIsLoading(false);
       }
     }
