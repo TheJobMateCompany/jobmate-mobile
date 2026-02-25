@@ -1,8 +1,11 @@
 /**
- * Types du système de thème — à compléter en Phase 1.2
+ * Types du système de thème — Phase 1.2
+ * Tokens alignés avec docs/MOBILE_UI_UX.md §1.1 – §1.4
  */
 
 export type ThemeMode = 'light' | 'dark' | 'system';
+
+// ─── Couleurs ─────────────────────────────────────────────────────────────────
 
 export interface ThemeColors {
   // Brand
@@ -13,68 +16,87 @@ export interface ThemeColors {
   // Sémantiques
   success: string;
   warning: string;
-  error: string;
-  info: string;
+  danger: string;
 
   // Surfaces
   background: string;
   surface: string;
-  surfaceElevated: string;
+  surfaceVariant: string;
   border: string;
+  overlay: string;
 
   // Texte
   textPrimary: string;
   textSecondary: string;
   textDisabled: string;
-  textInverse: string;
+}
 
-  // Tab bar
-  tabActive: string;
-  tabInactive: string;
+// ─── Typographie ──────────────────────────────────────────────────────────────
+
+export interface TextStyle {
+  fontSize: number;
+  fontWeight: '400' | '500' | '600' | '700';
+  lineHeight: number;
+  fontFamily: string;
 }
 
 export interface ThemeTypography {
-  h1: { fontSize: number; fontWeight: '700'; lineHeight: number };
-  h2: { fontSize: number; fontWeight: '600'; lineHeight: number };
-  h3: { fontSize: number; fontWeight: '600'; lineHeight: number };
-  body: { fontSize: number; fontWeight: '400'; lineHeight: number };
-  bodySmall: { fontSize: number; fontWeight: '400'; lineHeight: number };
-  caption: { fontSize: number; fontWeight: '400'; lineHeight: number };
-  label: { fontSize: number; fontWeight: '500'; lineHeight: number };
-  button: { fontSize: number; fontWeight: '600'; lineHeight: number };
+  displayLarge: TextStyle;  // 32sp / 700 — Titres onboarding
+  displayMedium: TextStyle; // 26sp / 700 — Titre de page
+  headingLarge: TextStyle;  // 22sp / 600 — Section header
+  headingMedium: TextStyle; // 18sp / 600 — Card title, modal title
+  bodyLarge: TextStyle;     // 16sp / 400 — Corps principal
+  bodyMedium: TextStyle;    // 14sp / 400 — Descriptions, labels
+  bodySmall: TextStyle;     // 12sp / 400 — Méta-données
+  label: TextStyle;         // 13sp / 500 — Labels bouton, tabs
+  caption: TextStyle;       // 11sp / 400 — Légendes
 }
+
+// ─── Espacement ───────────────────────────────────────────────────────────────
 
 export interface ThemeSpacing {
-  xxs: number; // 2
-  xs: number; // 4
-  sm: number; // 8
-  md: number; // 12
-  lg: number; // 16
-  xl: number; // 24
-  xxl: number; // 32
-  xxxl: number; // 48
+  xs: number;   // 4
+  sm: number;   // 8
+  md: number;   // 16
+  lg: number;   // 24
+  xl: number;   // 32
+  xxl: number;  // 48
 }
+
+// ─── Border radius ────────────────────────────────────────────────────────────
 
 export interface ThemeRadius {
-  xs: number; // 4
-  sm: number; // 8
-  md: number; // 12
-  lg: number; // 16
-  xl: number; // 24
-  full: number; // 9999
+  xs: number;    // 4  — badges
+  sm: number;    // 8  — inputs, boutons
+  md: number;    // 12 — cards
+  lg: number;    // 16 — modals bottom sheet
+  xl: number;    // 24 — onboarding cards
+  full: number;  // 9999 — avatars, tag pills
 }
 
-export interface ThemeShadow {
-  card: object;
-  modal: object;
-  fab: object;
+// ─── Ombres ───────────────────────────────────────────────────────────────────
+
+export interface ShadowStyle {
+  shadowColor: string;
+  shadowOffset: { width: number; height: number };
+  shadowOpacity: number;
+  shadowRadius: number;
+  elevation: number; // Android
 }
+
+export interface ThemeShadows {
+  card: ShadowStyle;
+  modal: ShadowStyle;
+  fab: ShadowStyle;
+}
+
+// ─── Theme complet ────────────────────────────────────────────────────────────
 
 export interface Theme {
+  mode: 'light' | 'dark';
   colors: ThemeColors;
   typography: ThemeTypography;
   spacing: ThemeSpacing;
   radius: ThemeRadius;
-  shadows: ThemeShadow;
-  mode: 'light' | 'dark';
+  shadows: ThemeShadows;
 }
