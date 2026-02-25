@@ -10,7 +10,14 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import { router } from 'expo-router';
 import { type User } from '@/types/api';
-import { saveToken, getToken, deleteToken, savePreference, getPreference, deletePreference } from '@/lib/storage';
+import {
+  saveToken,
+  getToken,
+  deleteToken,
+  savePreference,
+  getPreference,
+  deletePreference,
+} from '@/lib/storage';
 import { isTokenExpired } from '@/lib/validators';
 
 // ─── Clé AsyncStorage pour l'objet User ───────────────────────────────────────
