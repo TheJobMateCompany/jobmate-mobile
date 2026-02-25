@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -10,12 +10,13 @@ import {
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
 import { ThemeProvider } from '../src/context/ThemeContext';
+import { initI18n } from '../src/i18n';
 
 // Empêcher le splash de se masquer automatiquement avant que tout soit prêt
 SplashScreen.preventAutoHideAsync();
 
 /**
- * Root Layout — Phase 1.2 (ThemeProvider + fonts)
+ * Root Layout — Phase 1.3 (ThemeProvider + fonts + i18n)
  * Phase 1.4 : AuthContext.Provider s'ajoutera ici (à l'intérieur de ThemeProvider)
  * Phase 1.6 : SplashScreen.hideAsync() après fonts + auth rehydratés
  */
@@ -26,15 +27,22 @@ export default function RootLayout() {
     Inter_600SemiBold,
     Inter_700Bold,
   });
+  const [i18nReady, setI18nReady] = useState(false);
 
+  // Initialiser i18n (AsyncStorage → expo-localization → 'en')
   useEffect(() => {
-    if (fontsLoaded || fontError) {
+    void initI18n().then(() => setI18nReady(true));
+  }, []);
+
+  // Masquer le splash uniquement quand fonts ET i18n sont prêts
+  useEffect(() => {
+    if ((fontsLoaded || fontError) && i18nReady) {
       // Phase 1.6 : ici on attendra aussi la rehydratation auth
       void SplashScreen.hideAsync();
     }
-  }, [fontsLoaded, fontError]);
+  }, [fontsLoaded, fontError, i18nReady]);
 
-  if (!fontsLoaded && !fontError) {
+  if ((!fontsLoaded && !fontError) || !i18nReady) {
     return null;
   }
 
