@@ -129,11 +129,7 @@ export interface StatusTransition {
 
 // ─── SSE Events ────────────────────────────────────────────────────────────────
 
-export type SSEEventType =
-  | 'job_discovered'
-  | 'job_scored'
-  | 'cv_parsed'
-  | 'ping';
+export type SSEEventType = 'job_discovered' | 'job_scored' | 'cv_parsed' | 'ping';
 
 export interface SSEEvent<T = unknown> {
   type: SSEEventType;

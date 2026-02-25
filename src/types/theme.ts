@@ -46,21 +46,21 @@ export interface ThemeTypography {
 
 export interface ThemeSpacing {
   xxs: number; // 2
-  xs: number;  // 4
-  sm: number;  // 8
-  md: number;  // 12
-  lg: number;  // 16
-  xl: number;  // 24
+  xs: number; // 4
+  sm: number; // 8
+  md: number; // 12
+  lg: number; // 16
+  xl: number; // 24
   xxl: number; // 32
   xxxl: number; // 48
 }
 
 export interface ThemeRadius {
-  xs: number;   // 4
-  sm: number;   // 8
-  md: number;   // 12
-  lg: number;   // 16
-  xl: number;   // 24
+  xs: number; // 4
+  sm: number; // 8
+  md: number; // 12
+  lg: number; // 16
+  xl: number; // 24
   full: number; // 9999
 }
 

@@ -116,7 +116,10 @@ export class SSEClient {
       const error = err as Error;
       if (error.name === 'AbortError') return;
 
-      console.warn(`[SSEClient] Erreur de connexion, retry dans ${this.retryMs}ms :`, error.message);
+      console.warn(
+        `[SSEClient] Erreur de connexion, retry dans ${this.retryMs}ms :`,
+        error.message,
+      );
       this._scheduleRetry();
     }
   }
