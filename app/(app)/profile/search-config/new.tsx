@@ -35,13 +35,11 @@ export default function NewSearchConfigScreen() {
     <ScreenWrapper padded={false}>
       <Stack.Screen
         options={{
-          headerShown: true,
           title: 'Nouvelle configuration',
-          headerBackTitle: 'Retour',
         }}
       />
       <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.lg }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >

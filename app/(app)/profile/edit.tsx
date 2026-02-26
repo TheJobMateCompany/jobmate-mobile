@@ -94,7 +94,7 @@ export default function EditProfileScreen() {
         // On renvoie les skills comme tableau de strings (compatible JSON backend)
         skills: skills as unknown[],
       });
-      router.back();
+      router.replace('/(app)/profile');
     } catch {
       Alert.alert('Erreur', 'Impossible de sauvegarder les modifications.');
     }

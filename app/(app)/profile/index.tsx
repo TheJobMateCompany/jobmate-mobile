@@ -14,12 +14,13 @@
  */
 
 import { useState, useCallback } from 'react';
-import { ScrollView, View, Text, RefreshControl, Alert } from 'react-native';
-import { router } from 'expo-router';
+import { ScrollView, View, Text, TouchableOpacity, RefreshControl, Alert } from 'react-native';
+import { router, Stack } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '@/hooks/useProfile';
 import { useUploadCV } from '@/hooks/useUploadCV';
+import { useSearchConfigs } from '@/hooks/useSearchConfigs';
 import { useTheme } from '@/hooks/useTheme';
-import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { Spacer } from '@/components/ui/Spacer';
 import { Divider } from '@/components/ui/Divider';
@@ -57,10 +58,13 @@ function SectionTitle({ label }: { label: string }) {
 // ─── Écran ─────────────────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
-  const { colors, spacing } = useTheme();
+  const { colors, spacing, radius, typography } = useTheme();
   const { profile, isLoading, fetchProfile } = useProfile();
+  const { configs } = useSearchConfigs();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+
+  const activeCount = configs.filter((c) => c.isActive).length;
 
   // ── useUploadCV : écoute CV_PARSED pour désactiver l'état « analyse » ─────
   const { isUploading, progress, pickAndUpload } = useUploadCV({
@@ -98,9 +102,28 @@ export default function ProfileScreen() {
     .filter((e) => e !== null);
 
   return (
-    <ScreenWrapper padded={false}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
+      {/* Header natif avec bouton Modifier */}
+      <Stack.Screen
+        options={{
+          headerShown: true,
+          title: 'Mon profil',
+          headerRight: () => (
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/profile/edit')}
+              accessibilityRole="button"
+              accessibilityLabel="Modifier le profil"
+              style={{ paddingHorizontal: spacing.sm }}
+            >
+              <Text style={[typography.label, { color: colors.primary, fontWeight: '600' }]}>
+                Modifier
+              </Text>
+            </TouchableOpacity>
+          ),
+        }}
+      />
       <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.lg }}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -130,11 +153,7 @@ export default function ProfileScreen() {
         ) : (
           <>
             {/* ── Header profil ── */}
-            <ProfileHeader
-              profile={profile}
-              editable
-              onEditPress={() => router.push('/(app)/profile/edit')}
-            />
+            <ProfileHeader profile={profile} />
 
             <Spacer size={spacing.md} />
 
@@ -144,9 +163,9 @@ export default function ProfileScreen() {
             {/* ── Compétences ── */}
             {skills.length > 0 && (
               <>
-                <Spacer size={spacing.lg} />
+                <Spacer size={spacing.md} />
                 <Divider />
-                <Spacer size={spacing.lg} />
+                <Spacer size={spacing.md} />
                 <SectionTitle label="Compétences" />
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
                   {skills.map((skill) => (
@@ -159,9 +178,9 @@ export default function ProfileScreen() {
             {/* ── Expériences ── */}
             {experiences.length > 0 && (
               <>
-                <Spacer size={spacing.lg} />
+                <Spacer size={spacing.md} />
                 <Divider />
-                <Spacer size={spacing.lg} />
+                <Spacer size={spacing.md} />
                 <SectionTitle label="Expériences" />
                 {experiences.map((entry, idx) => (
                   <ExperienceItem
@@ -174,9 +193,9 @@ export default function ProfileScreen() {
             )}
 
             {/* ── CV ── */}
-            <Spacer size={spacing.lg} />
+            <Spacer size={spacing.md} />
             <Divider />
-            <Spacer size={spacing.lg} />
+            <Spacer size={spacing.md} />
             <SectionTitle label="Curriculum Vitae" />
             <CvUploadCard
               cvUrl={profile?.cvUrl ?? null}
@@ -187,9 +206,54 @@ export default function ProfileScreen() {
                 void handleUpload();
               }}
             />
+
+            {/* ── Configurations de recherche ── */}
+            <Spacer size={spacing.sm} />
+            <Divider />
+            <TouchableOpacity
+              onPress={() => router.push('/(app)/profile/search-config')}
+              accessibilityRole="button"
+              accessibilityLabel="Voir les configurations de recherche"
+              activeOpacity={0.7}
+              style={{
+                flexDirection: 'row',
+                alignItems: 'center',
+                paddingVertical: spacing.md,
+              }}
+            >
+              <View style={{ flex: 1 }}>
+                <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
+                  Configurations de recherche
+                </Text>
+                <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 2 }]}>
+                  {activeCount > 0
+                    ? `${activeCount} configuration${activeCount > 1 ? 's' : ''} active${activeCount > 1 ? 's' : ''}`
+                    : 'Aucune configuration — appuyez pour en créer une'}
+                </Text>
+              </View>
+              {activeCount > 0 && (
+                <View
+                  style={{
+                    backgroundColor: colors.primary,
+                    borderRadius: radius.full,
+                    minWidth: 22,
+                    height: 22,
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    paddingHorizontal: 6,
+                    marginRight: spacing.sm,
+                  }}
+                >
+                  <Text style={[typography.caption, { color: '#fff', fontWeight: '700' }]}>
+                    {activeCount}
+                  </Text>
+                </View>
+              )}
+              <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
+            </TouchableOpacity>
           </>
         )}
       </ScrollView>
-    </ScreenWrapper>
+    </View>
   );
 }

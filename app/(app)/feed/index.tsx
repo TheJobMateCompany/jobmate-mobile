@@ -17,7 +17,6 @@ import {
   Text,
   RefreshControl,
   TouchableOpacity,
-  SafeAreaView,
   type ListRenderItem,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
@@ -108,7 +107,7 @@ export default function FeedScreen() {
   // ─── Contenu principal ──────────────────────────────────────────────────────
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }}>
+    <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen options={{ title: 'Offres', headerShown: true }} />
 
       <View style={{ flex: 1, paddingHorizontal: spacing.md }}>
@@ -156,6 +155,6 @@ export default function FeedScreen() {
           />
         )}
       </View>
-    </SafeAreaView>
+    </View>
   );
 }

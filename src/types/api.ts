@@ -122,6 +122,30 @@ export interface JobFeedItem {
 }
 
 /**
+ * Réponse de addJobByUrl / addJobManually.
+ * jobFeedId sert ensuite à appeler approveJob.
+ */
+export interface ManualJobResult {
+  jobFeedId: string;
+  message: string;
+}
+
+/**
+ * Input pour addJobManually — correspond à ManualJobInput dans le schéma GraphQL.
+ * companyName est le seul champ obligatoire.
+ */
+export interface ManualJobInput {
+  searchConfigId?: string | null;
+  companyName: string;
+  companyDescription?: string | null;
+  location?: string | null;
+  profileWanted?: string | null;
+  startDate?: string | null;
+  duration?: string | null;
+  whyUs?: string | null;
+}
+
+/**
  * Représentation enrichie d'une offre (parsée depuis rawData + données analysées
  * via l'IA dans applications.ai_analysis). Utilisé en affichage côté mobile.
  */
@@ -179,7 +203,8 @@ export interface Application {
   generatedCoverLetter: string | null;
   userNotes: string | null;
   userRating: number | null;
-  relanceAt: string | null;
+  /** Alias GraphQL de applications.relance_reminder_at */
+  relanceReminderAt: string | null;
   historyLog: StatusTransition[];
   createdAt: string;
   updatedAt: string;

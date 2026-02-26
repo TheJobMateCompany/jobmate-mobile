@@ -1,197 +1,140 @@
 /**
- * SSEClient — Connexion Server-Sent Events via fetch streaming
+ * SSEClient � Connexion Server-Sent Events via react-native-sse
  *
- * ⚠️ React Native ne fournit PAS l'API EventSource du navigateur.
- *    Implémentation via fetch + ReadableStream (disponible dans Hermes/Expo SDK 50+).
- *
- * Usage :
- *   const client = new SSEClient('https://api.meelkyway.com/events', token);
- *   client.subscribe('job_discovered', (data) => { ... });
- *   client.subscribe('job_scored', (data) => { ... });
- *   client.connect();
- *   // Cleanup :
- *   client.disconnect();
+ * Utilise `react-native-sse` qui fournit un EventSource compatible
+ * avec React Native / Hermes (contrairement � fetch + ReadableStream
+ * qui n'est pas support� dans RN).
  */
 
+import EventSource from 'react-native-sse';
 import { getToken } from './storage';
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// --- Types ---------------------------------------------------------------------
 
 type SSEHandler = (data: unknown) => void;
 
 interface SSEClientOptions {
   baseUrl: string;
-  /** Délai initial de reconnexion en ms (défaut : 1000) */
   initialRetryMs?: number;
-  /** Délai max de reconnexion en ms (défaut : 30 000) */
   maxRetryMs?: number;
 }
 
-// ─── SSEClient ────────────────────────────────────────────────────────────────
+// --- SSEClient -----------------------------------------------------------------
 
 export class SSEClient {
   private readonly options: Required<SSEClientOptions>;
   private handlers: Map<string, Set<SSEHandler>> = new Map();
-  private abortController: AbortController | null = null;
+  private es: InstanceType<typeof EventSource> | null = null;
   private retryMs: number;
-  private isConnected = false;
+  private active = false;
   private retryTimeout: ReturnType<typeof setTimeout> | null = null;
 
   constructor(options: SSEClientOptions) {
     this.options = {
       baseUrl: options.baseUrl,
-      initialRetryMs: options.initialRetryMs ?? 1000,
+      initialRetryMs: options.initialRetryMs ?? 1_000,
       maxRetryMs: options.maxRetryMs ?? 30_000,
     };
     this.retryMs = this.options.initialRetryMs;
   }
-
-  // ─── API publique ───────────────────────────────────────────────────────────
 
   subscribe(eventType: string, handler: SSEHandler): () => void {
     if (!this.handlers.has(eventType)) {
       this.handlers.set(eventType, new Set());
     }
     this.handlers.get(eventType)!.add(handler);
-
-    // Retourne une fonction unsubscribe
     return () => {
       this.handlers.get(eventType)?.delete(handler);
     };
   }
 
   connect(): void {
-    if (this.isConnected) return;
+    if (this.active) return;
     void this._connect();
   }
 
   disconnect(): void {
-    this.isConnected = false;
-    this.abortController?.abort();
+    this.active = false;
     if (this.retryTimeout) {
       clearTimeout(this.retryTimeout);
       this.retryTimeout = null;
     }
+    this._closeES();
   }
 
-  // ─── Implémentation interne ─────────────────────────────────────────────────
+  private _closeES(): void {
+    if (this.es) {
+      this.es.close();
+      this.es = null;
+    }
+  }
 
   private async _connect(): Promise<void> {
-    this.isConnected = true;
-    this.abortController = new AbortController();
+    this.active = true;
+    this._closeES();
 
-    try {
-      const token = await getToken();
-      if (!token) {
-        console.error('[SSEClient] Aucun token disponible — connexion annulée');
-        return;
-      }
+    const token = await getToken();
+    if (!token) {
+      console.error('[SSEClient] Aucun token disponible � connexion annul�e');
+      return;
+    }
 
-      const url = `${this.options.baseUrl}?token=${encodeURIComponent(token)}`;
+    const url = `${this.options.baseUrl}?token=${encodeURIComponent(token)}`;
 
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: {
-          Accept: 'text/event-stream',
-          'Cache-Control': 'no-cache',
-        },
-        signal: this.abortController.signal,
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-explicit-any
+    const es = new (EventSource as any)(url) as {
+      addEventListener: (type: string, cb: (e: { data: string | null }) => void) => void;
+      close: () => void;
+      onerror: ((e: unknown) => void) | null;
+      onopen: (() => void) | null;
+    };
+    this.es = es as unknown as InstanceType<typeof EventSource>;
+
+    // Generic 'message' events
+    es.addEventListener('message', (e) => {
+      this._dispatch('message', e.data);
+    });
+
+    // Named event types already registered
+    for (const eventType of this.handlers.keys()) {
+      if (eventType === 'message') continue;
+      es.addEventListener(eventType, (e) => {
+        this._dispatch(eventType, e.data);
       });
+    }
 
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}`);
-      }
+    es.onerror = () => {
+      if (!this.active) return;
+      console.warn(`[SSEClient] Erreur SSE, retry dans ${this.retryMs}ms`);
+      this._closeES();
+      this._scheduleRetry();
+    };
 
-      if (!response.body) {
-        throw new Error('ReadableStream non disponible');
-      }
-
-      // Réinitialiser le backoff après une connexion réussie
+    es.onopen = () => {
       this.retryMs = this.options.initialRetryMs;
-
-      await this._readStream(response.body);
-    } catch (err) {
-      if (!this.isConnected) return; // Déconnexion intentionnelle
-
-      const error = err as Error;
-      if (error.name === 'AbortError') return;
-
-      console.warn(
-        `[SSEClient] Erreur de connexion, retry dans ${this.retryMs}ms :`,
-        error.message,
-      );
-      this._scheduleRetry();
-    }
+    };
   }
 
-  private async _readStream(body: ReadableStream<Uint8Array>): Promise<void> {
-    const reader = body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
-
+  private _dispatch(eventType: string, rawData: string | null): void {
+    if (!rawData) return;
     try {
-      while (this.isConnected) {
-        const { done, value } = await reader.read();
-        if (done) break;
-
-        buffer += decoder.decode(value, { stream: true });
-
-        // Découper les messages SSE (séparés par \n\n)
-        const messages = buffer.split('\n\n');
-        buffer = messages.pop() ?? '';
-
-        for (const message of messages) {
-          this._parseAndDispatch(message);
-        }
-      }
-    } finally {
-      reader.releaseLock();
-    }
-
-    // Fin du stream sans erreur = reconnexion si toujours actif
-    if (this.isConnected) {
-      this._scheduleRetry();
-    }
-  }
-
-  private _parseAndDispatch(message: string): void {
-    let eventType = 'message';
-    let dataStr = '';
-
-    for (const line of message.split('\n')) {
-      if (line.startsWith('event:')) {
-        eventType = line.slice(6).trim();
-      } else if (line.startsWith('data:')) {
-        dataStr += line.slice(5).trim();
-      }
-    }
-
-    if (!dataStr) return;
-
-    try {
-      const data: unknown = JSON.parse(dataStr);
-      const handlers = this.handlers.get(eventType);
-      if (handlers) {
-        handlers.forEach((handler) => handler(data));
-      }
+      const data: unknown = JSON.parse(rawData);
+      this.handlers.get(eventType)?.forEach((h) => h(data));
     } catch {
-      console.warn('[SSEClient] Impossible de parser le message SSE :', dataStr);
+      console.warn('[SSEClient] Impossible de parser le message SSE :', rawData);
     }
   }
 
   private _scheduleRetry(): void {
-    if (!this.isConnected) return;
-
+    if (!this.active) return;
     this.retryTimeout = setTimeout(() => {
       void this._connect();
     }, this.retryMs);
-
-    // Backoff exponentiel plafonné à maxRetryMs
     this.retryMs = Math.min(this.retryMs * 2, this.options.maxRetryMs);
   }
 }
 
-// ─── Instance singleton ────────────────────────────────────────────────────────
+// --- Instance singleton ---------------------------------------------------------
 
 export const sseClient = new SSEClient({
   baseUrl: 'https://api.meelkyway.com/events',

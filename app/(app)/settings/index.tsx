@@ -1,15 +1,21 @@
-﻿import { View, Text, StyleSheet } from 'react-native';
+﻿import { View, Text } from 'react-native';
+import { useTheme } from '@/hooks/useTheme';
 
 // TODO Paramètres — Phase 7
 export default function Screen() {
+  const { colors, typography } = useTheme();
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Paramètres — Phase 7</Text>
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: colors.background,
+      }}
+    >
+      <Text style={[typography.bodyMedium, { color: colors.textSecondary }]}>
+        Paramètres — bientôt disponible
+      </Text>
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
-  text: { color: '#4F46E5', fontSize: 16, fontWeight: '600' },
-});

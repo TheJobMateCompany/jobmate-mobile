@@ -154,7 +154,6 @@ export default function SearchConfigListScreen() {
     <ScreenWrapper padded={false}>
       <Stack.Screen
         options={{
-          headerShown: true,
           title: 'Configurations',
           headerRight: () =>
             isSubmitting ? <ActivityIndicator size="small" color={colors.primary} /> : null,
@@ -162,11 +161,11 @@ export default function SearchConfigListScreen() {
       />
 
       <FlatList
-        data={configs}
+        data={[...configs].sort((a, b) => (b.isActive ? 1 : 0) - (a.isActive ? 1 : 0))}
         keyExtractor={(c) => c.id}
         contentContainerStyle={{
-          padding: spacing.lg,
-          paddingBottom: spacing.xxl + 72, // espace sous le FAB
+          padding: spacing.md,
+          paddingBottom: spacing.md + 72, // espace sous le FAB
           flexGrow: 1,
         }}
         ItemSeparatorComponent={() => <Spacer size={spacing.md} />}
@@ -213,6 +212,21 @@ export default function SearchConfigListScreen() {
               >
                 Créez une configuration pour que l'IA recherche des offres adaptées.
               </Text>
+              <Spacer size={spacing.lg} />
+              <TouchableOpacity
+                onPress={() => router.push('/(app)/profile/search-config/new')}
+                accessibilityRole="button"
+                style={{
+                  backgroundColor: colors.primary,
+                  paddingHorizontal: spacing.xl,
+                  paddingVertical: spacing.sm,
+                  borderRadius: radius.md,
+                }}
+              >
+                <Text style={[typography.label, { color: '#fff', fontWeight: '600' }]}>
+                  Créer une configuration
+                </Text>
+              </TouchableOpacity>
             </View>
           ) : null
         }

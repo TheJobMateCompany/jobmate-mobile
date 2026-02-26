@@ -7,6 +7,8 @@ import { useTheme } from '../../src/hooks/useTheme';
 import { isTokenExpired } from '../../src/lib/validators';
 import { ONBOARDING_KEY } from './onboarding';
 
+export const FIRST_LOGIN_KEY = '@first_login';
+
 export default function AuthLayout() {
   const { token, isLoading } = useAuth();
   const { colors } = useTheme();
@@ -24,7 +26,16 @@ export default function AuthLayout() {
     if (isLoading || initialRoute === null) return;
 
     if (token && !isTokenExpired(token)) {
-      router.replace('/(app)/feed');
+      // Si l'utilisateur vient de s'inscrire, on l'envoie sur son profil (vue lecture)
+      // pour qu'il puisse voir le bouton "Modifier" et comprendre l'interface.
+      void AsyncStorage.getItem(FIRST_LOGIN_KEY).then((val) => {
+        if (val === 'true') {
+          void AsyncStorage.removeItem(FIRST_LOGIN_KEY);
+          router.replace('/(app)/profile/edit');
+        } else {
+          router.replace('/(app)/feed');
+        }
+      });
       return;
     }
 

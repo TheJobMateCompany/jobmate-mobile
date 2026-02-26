@@ -40,7 +40,6 @@ export default function EditSearchConfigScreen() {
   if (isLoading || !config) {
     return (
       <ScreenWrapper>
-        <Stack.Screen options={{ headerShown: true, title: 'Configuration' }} />
         <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
           {isLoading ? (
             <ActivityIndicator size="large" color={colors.primary} />
@@ -72,13 +71,11 @@ export default function EditSearchConfigScreen() {
     <ScreenWrapper padded={false}>
       <Stack.Screen
         options={{
-          headerShown: true,
           title: config.jobTitles.slice(0, 1).join('') || 'Modifier',
-          headerBackTitle: 'Retour',
         }}
       />
       <ScrollView
-        contentContainerStyle={{ padding: spacing.lg, paddingBottom: spacing.xxl }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: spacing.lg }}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >

@@ -154,9 +154,10 @@ const styles = StyleSheet.create({
   },
   input: {
     flex: 1,
-    paddingTop: 18,
-    paddingBottom: 8,
+    paddingTop: 14,
+    paddingBottom: 10,
     minHeight: 52,
+    textAlignVertical: 'center',
   },
   errorText: {
     marginTop: 4,

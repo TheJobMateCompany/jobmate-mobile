@@ -10,12 +10,21 @@ import {
   Inter_600SemiBold,
   Inter_700Bold,
 } from '@expo-google-fonts/inter';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import * as SecureStore from 'expo-secure-store';
 import { ThemeProvider } from '../src/context/ThemeContext';
 import { AuthProvider, useAuth } from '../src/context/AuthContext';
 import { initI18n } from '../src/i18n';
 
 // ── Log module-level : confirme que le fichier est chargé par Metro ──────────
 console.log('[Layout] Module loaded ✓');
+
+// ── Dev only : vide tout le stockage local à chaque démarrage ────────────────
+if (__DEV__) {
+  void Promise.all([AsyncStorage.clear(), SecureStore.deleteItemAsync('auth_token')]).then(() =>
+    console.log('[DEV] Storage cleared on startup (AsyncStorage + SecureStore)'),
+  );
+}
 
 // Empêcher le splash de se masquer automatiquement avant que tout soit prêt
 SplashScreen.preventAutoHideAsync().catch((e) =>

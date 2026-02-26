@@ -88,7 +88,7 @@ export default function LoginScreen() {
   // ─── Rendu ──────────────────────────────────────────────────────────────
 
   return (
-    <ScreenWrapper scroll padded>
+    <ScreenWrapper scroll padded edges={['top', 'bottom']}>
       <Spacer size={spacing.xxl} />
 
       {/* En-tête */}

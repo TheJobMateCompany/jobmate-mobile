@@ -5,16 +5,20 @@
  * SafeAreaView + KeyboardAvoidingView + fond colors.background
  * Option `scroll` : enroule le contenu dans un ScrollView
  * Option `padded` (défaut true) : padding horizontal standard
+ * Option `edges` (défaut ['bottom']) : quelles bordures SafeArea appliquer.
+ *   Les écrans dans un Stack navigator doivent utiliser ['bottom'] (le header
+ *   gère déjà le top). Les écrans sans header (auth) utilisent ['top','bottom'].
  */
 
 import {
   Platform,
+  View,
   ScrollView,
   KeyboardAvoidingView,
   StyleSheet,
   type ViewStyle,
 } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, type Edge } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 
 export interface ScreenWrapperProps {
@@ -23,6 +27,12 @@ export interface ScreenWrapperProps {
   scroll?: boolean;
   /** Padding horizontal standard (défaut : true) */
   padded?: boolean;
+  /**
+   * Bords SafeArea à appliquer.
+   * Défaut : ['bottom'] — le Stack header gère déjà le top.
+   * Passer ['top','bottom'] pour les écrans sans header (auth).
+   */
+  edges?: Edge[];
   style?: ViewStyle;
   contentContainerStyle?: ViewStyle;
 }
@@ -31,6 +41,7 @@ export function ScreenWrapper({
   children,
   scroll = false,
   padded = true,
+  edges = ['bottom'],
   style,
   contentContainerStyle,
 }: ScreenWrapperProps) {
@@ -41,7 +52,7 @@ export function ScreenWrapper({
       keyboardShouldPersistTaps="handled"
       showsVerticalScrollIndicator={false}
       contentContainerStyle={[
-        padded && { paddingHorizontal: spacing.lg },
+        padded && { paddingHorizontal: spacing.md },
         styles.scrollContent,
         contentContainerStyle,
       ]}
@@ -49,15 +60,16 @@ export function ScreenWrapper({
       {children}
     </ScrollView>
   ) : (
-    <SafeAreaView
-      style={[styles.fill, padded && { paddingHorizontal: spacing.lg }, contentContainerStyle]}
-    >
+    <View style={[styles.fill, padded && { paddingHorizontal: spacing.md }, contentContainerStyle]}>
       {children}
-    </SafeAreaView>
+    </View>
   );
 
   return (
-    <SafeAreaView style={[styles.fill, { backgroundColor: colors.background }, style]}>
+    <SafeAreaView
+      edges={edges}
+      style={[styles.fill, { backgroundColor: colors.background }, style]}
+    >
       <KeyboardAvoidingView
         style={styles.fill}
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -75,6 +87,6 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: 24,
+    paddingBottom: 16,
   },
 });

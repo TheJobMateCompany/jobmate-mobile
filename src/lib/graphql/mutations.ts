@@ -128,6 +128,26 @@ export const REJECT_JOB_MUTATION = /* GraphQL */ `
   }
 `;
 
+// ── Discovery (ajout manuel) ───────────────────────────────────────────────────
+
+export const ADD_JOB_BY_URL_MUTATION = /* GraphQL */ `
+  mutation AddJobByUrl($url: String!, $searchConfigId: ID) {
+    addJobByUrl(url: $url, searchConfigId: $searchConfigId) {
+      jobFeedId
+      message
+    }
+  }
+`;
+
+export const ADD_JOB_MANUALLY_MUTATION = /* GraphQL */ `
+  mutation AddJobManually($input: ManualJobInput!) {
+    addJobManually(input: $input) {
+      jobFeedId
+      message
+    }
+  }
+`;
+
 // ─── Application (Kanban) ──────────────────────────────────────────────────────
 
 export const MOVE_CARD_MUTATION = /* GraphQL */ `
@@ -164,5 +184,29 @@ export const SET_RELANCE_REMINDER_MUTATION = /* GraphQL */ `
       id
       relanceReminderAt
     }
+  }
+`;
+
+export const CREATE_APPLICATION_MUTATION = /* GraphQL */ `
+  mutation CreateApplication($jobFeedId: ID) {
+    createApplication(jobFeedId: $jobFeedId) {
+      id
+      currentStatus
+      jobFeedId
+      userNotes
+      userRating
+      relanceReminderAt
+      historyLog
+      aiAnalysis
+      generatedCoverLetter
+      createdAt
+      updatedAt
+    }
+  }
+`;
+
+export const DELETE_APPLICATION_MUTATION = /* GraphQL */ `
+  mutation DeleteApplication($applicationId: ID!) {
+    deleteApplication(applicationId: $applicationId)
   }
 `;

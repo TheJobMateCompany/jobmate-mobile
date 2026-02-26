@@ -2,13 +2,13 @@
  * Register — Phase 2.4
  *
  * Validation locale + indicateur de force mot de passe
- * Mutation GraphQL register → AuthContext.login() → redirect /(app)/profile/edit
- * Haptic Success / Error
+ * Mutation GraphQL register → AuthContext.login() → redirect /(app)/profile/edit * Haptic Success / Error
  */
 
 import { useState } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { router } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/context/AuthContext';
 import { useTheme } from '@/hooks/useTheme';
@@ -23,6 +23,7 @@ import { Input } from '@/components/ui/Input';
 import { Button } from '@/components/ui/Button';
 import { Spacer } from '@/components/ui/Spacer';
 import { ProgressBar } from '@/components/ui/ProgressBar';
+import { FIRST_LOGIN_KEY } from './_layout';
 
 interface RegisterResponse {
   register: AuthPayload;
@@ -91,10 +92,10 @@ export default function RegisterScreen() {
         password,
       });
 
+      // Marquer AVANT login() : (auth)/_layout.tsx lit le flag quand le token apparaît
+      await AsyncStorage.setItem(FIRST_LOGIN_KEY, 'true');
       await login(data.register.token, data.register.user);
       notification(Haptics.NotificationFeedbackType.Success);
-      // Post-inscription : aller directement à l'édition du profil
-      router.replace('/(app)/profile/edit');
     } catch (err) {
       setError(mapApiError(err));
       notification(Haptics.NotificationFeedbackType.Error);
@@ -106,7 +107,7 @@ export default function RegisterScreen() {
   // ─── Rendu ─────────────────────────────────────────────────────────────
 
   return (
-    <ScreenWrapper scroll padded>
+    <ScreenWrapper scroll padded edges={['top', 'bottom']}>
       <Spacer size={spacing.xxl} />
 
       {/* En-tête */}
