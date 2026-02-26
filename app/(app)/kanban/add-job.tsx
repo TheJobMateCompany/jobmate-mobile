@@ -342,7 +342,6 @@ export default function AddJobScreen() {
                 <TextInput
                   value={locationQuery}
                   onChangeText={handleLocationQuery}
-                  placeholder="ex : Paris, Lyon, Remote…"
                   placeholder={t('kanban.addJob.locationPlaceholder')}
                   placeholderTextColor={colors.textSecondary}
                   style={[
