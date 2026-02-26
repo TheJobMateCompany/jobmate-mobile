@@ -94,38 +94,41 @@ export default function AddJobScreen() {
     setMode(next);
   };
 
-  const handleLocationQuery = useCallback((q: string) => {
-    setLocationQuery(q);
-    if (locationDebounce.current) clearTimeout(locationDebounce.current);
-    if (q.trim().length < 2) {
-      setLocationSuggestions([]);
-      return;
-    }
-    locationDebounce.current = setTimeout(async () => {
-      setIsSearchingLocation(true);
-      try {
-        const resp = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&accept-language=${i18n.language}`,
-          { headers: { 'User-Agent': 'JobMate/1.0' } },
-        );
-        const data = (await resp.json()) as Array<{
-          display_name: string;
-          address?: { city?: string; town?: string; village?: string; country?: string };
-        }>;
-        const labels = data.map((r) => {
-          const addr = r.address;
-          const city = addr?.city ?? addr?.town ?? addr?.village ?? r.display_name;
-          const country = addr?.country ?? '';
-          return country ? `${city}, ${country}` : city;
-        });
-        setLocationSuggestions(labels);
-      } catch {
+  const handleLocationQuery = useCallback(
+    (q: string) => {
+      setLocationQuery(q);
+      if (locationDebounce.current) clearTimeout(locationDebounce.current);
+      if (q.trim().length < 2) {
         setLocationSuggestions([]);
-      } finally {
-        setIsSearchingLocation(false);
+        return;
       }
-    }, 400);
-  }, [i18n.language]);
+      locationDebounce.current = setTimeout(async () => {
+        setIsSearchingLocation(true);
+        try {
+          const resp = await fetch(
+            `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&accept-language=${i18n.language}`,
+            { headers: { 'User-Agent': 'JobMate/1.0' } },
+          );
+          const data = (await resp.json()) as Array<{
+            display_name: string;
+            address?: { city?: string; town?: string; village?: string; country?: string };
+          }>;
+          const labels = data.map((r) => {
+            const addr = r.address;
+            const city = addr?.city ?? addr?.town ?? addr?.village ?? r.display_name;
+            const country = addr?.country ?? '';
+            return country ? `${city}, ${country}` : city;
+          });
+          setLocationSuggestions(labels);
+        } catch {
+          setLocationSuggestions([]);
+        } finally {
+          setIsSearchingLocation(false);
+        }
+      }, 400);
+    },
+    [i18n.language],
+  );
 
   const selectLocation = (label: string) => {
     setForm((f) => ({ ...f, location: label }));
@@ -149,7 +152,10 @@ export default function AddJobScreen() {
         return;
       }
       if (!trimmed.startsWith('http')) {
-        Alert.alert(t('kanban.addJob.errors.invalidUrlTitle'), t('kanban.addJob.errors.invalidUrl'));
+        Alert.alert(
+          t('kanban.addJob.errors.invalidUrlTitle'),
+          t('kanban.addJob.errors.invalidUrl'),
+        );
         return;
       }
       const result = await addByUrl(trimmed);
@@ -497,11 +503,14 @@ export default function AddJobScreen() {
               ]}
             >
               {form.startDate
-                ? new Date(form.startDate).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
-                    day: '2-digit',
-                    month: '2-digit',
-                    year: 'numeric',
-                  })
+                ? new Date(form.startDate).toLocaleDateString(
+                    i18n.language === 'fr' ? 'fr-FR' : 'en-US',
+                    {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                    },
+                  )
                 : t('kanban.addJob.datePlaceholder')}
             </Text>
             <Text style={{ color: colors.textSecondary, fontSize: 16 }}>📅</Text>

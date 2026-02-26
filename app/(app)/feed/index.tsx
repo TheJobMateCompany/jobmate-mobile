@@ -41,11 +41,11 @@ export default function FeedScreen() {
   const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
   const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
-    const filters: { label: string; value: JobStatus }[] = [
-      { label: t('feed.filter.pending'), value: FILTER_VALUES[0] },
-      { label: t('feed.filter.approved'), value: FILTER_VALUES[1] },
-      { label: t('feed.filter.rejected'), value: FILTER_VALUES[2] },
-    ];
+  const filters: { label: string; value: JobStatus }[] = [
+    { label: t('feed.filter.pending'), value: FILTER_VALUES[0] },
+    { label: t('feed.filter.approved'), value: FILTER_VALUES[1] },
+    { label: t('feed.filter.rejected'), value: FILTER_VALUES[2] },
+  ];
 
   const [activeStatus, setActiveStatus] = useState<JobStatus>('PENDING');
   const { jobs, isLoading, isRefreshing, isSubmitting, error, fetchFeed, approveJob, rejectJob } =

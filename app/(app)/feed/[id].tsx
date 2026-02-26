@@ -288,7 +288,9 @@ export default function FeedDetailScreen() {
             <Text style={[typography.label, { color: colors.primary, flex: 1 }]} numberOfLines={1}>
               🔗 {sourceUrl}
             </Text>
-            <Text style={[typography.caption, { color: colors.textDisabled }]}>↗ {t('feed.viewSource')}</Text>
+            <Text style={[typography.caption, { color: colors.textDisabled }]}>
+              ↗ {t('feed.viewSource')}
+            </Text>
           </TouchableOpacity>
         ) : null}
 

@@ -92,7 +92,9 @@ export function CvUploadCard({
       {!isUploading && isAnalyzing && (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
           <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={[typography.caption, { color: colors.primary }]}>{t('profile.cvParsing')}</Text>
+          <Text style={[typography.caption, { color: colors.primary }]}>
+            {t('profile.cvParsing')}
+          </Text>
         </View>
       )}
 

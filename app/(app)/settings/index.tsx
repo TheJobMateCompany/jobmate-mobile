@@ -208,27 +208,30 @@ export default function SettingsScreen() {
 
   // ── Notifications toggle ────────────────────────────────────────────────────
 
-  const handlePushToggle = useCallback(async (val: boolean) => {
-    if (val) {
-      setCheckingPerms(true);
-      try {
-        const { status } = await Notifications.requestPermissionsAsync();
-        setPushEnabled(status === 'granted');
-        if (status !== 'granted') {
-          Alert.alert(
-            t('settings.notificationsDisabledTitle'),
-            Platform.OS === 'ios'
-              ? t('settings.notificationsDisabledIos')
-              : t('settings.notificationsDisabledAndroid'),
-          );
+  const handlePushToggle = useCallback(
+    async (val: boolean) => {
+      if (val) {
+        setCheckingPerms(true);
+        try {
+          const { status } = await Notifications.requestPermissionsAsync();
+          setPushEnabled(status === 'granted');
+          if (status !== 'granted') {
+            Alert.alert(
+              t('settings.notificationsDisabledTitle'),
+              Platform.OS === 'ios'
+                ? t('settings.notificationsDisabledIos')
+                : t('settings.notificationsDisabledAndroid'),
+            );
+          }
+        } finally {
+          setCheckingPerms(false);
         }
-      } finally {
-        setCheckingPerms(false);
+      } else {
+        setPushEnabled(false);
       }
-    } else {
-      setPushEnabled(false);
-    }
-  }, [t]);
+    },
+    [t],
+  );
 
   // ── Thème ───────────────────────────────────────────────────────────────────
 
@@ -251,20 +254,16 @@ export default function SettingsScreen() {
   // ── Tutoriel ────────────────────────────────────────────────────────────────
 
   const handleResetTutorial = useCallback(() => {
-    Alert.alert(
-      t('settings.reviewTutorial'),
-      t('settings.reviewTutorialConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.confirm'),
-          onPress: async () => {
-            await AsyncStorage.removeItem(ONBOARDING_KEY);
-            await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-          },
+    Alert.alert(t('settings.reviewTutorial'), t('settings.reviewTutorialConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.confirm'),
+        onPress: async () => {
+          await AsyncStorage.removeItem(ONBOARDING_KEY);
+          await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
         },
-      ],
-    );
+      },
+    ]);
   }, [t]);
 
   // ── Déconnexion ─────────────────────────────────────────────────────────────
@@ -286,35 +285,31 @@ export default function SettingsScreen() {
   // ── Suppression compte ──────────────────────────────────────────────────────
 
   const handleDeleteAccount = useCallback(() => {
-    Alert.alert(
-      t('settings.deleteAccount'),
-      t('settings.deleteAccountConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: () => {
-            Alert.alert(
-              t('settings.deleteAccountFinalTitle'),
-              t('settings.deleteAccountFinalConfirm'),
-              [
-                { text: t('common.cancel'), style: 'cancel' },
-                {
-                  text: t('settings.deleteAccountFinalAction'),
-                  style: 'destructive',
-                  onPress: async () => {
-                    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
-                    // TODO: appel API deleteAccount (Phase 8)
-                    await logout();
-                  },
+    Alert.alert(t('settings.deleteAccount'), t('settings.deleteAccountConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: () => {
+          Alert.alert(
+            t('settings.deleteAccountFinalTitle'),
+            t('settings.deleteAccountFinalConfirm'),
+            [
+              { text: t('common.cancel'), style: 'cancel' },
+              {
+                text: t('settings.deleteAccountFinalAction'),
+                style: 'destructive',
+                onPress: async () => {
+                  await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+                  // TODO: appel API deleteAccount (Phase 8)
+                  await logout();
                 },
-              ],
-            );
-          },
+              },
+            ],
+          );
         },
-      ],
-    );
+      },
+    ]);
   }, [logout, t]);
 
   const version = Constants.expoConfig?.version ?? '1.0.0';

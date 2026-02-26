@@ -20,11 +20,7 @@ export interface EmptyFeedProps {
   style?: ViewStyle;
 }
 
-export function EmptyFeed({
-  ctaLabel,
-  onCtaPress,
-  style,
-}: EmptyFeedProps) {
+export function EmptyFeed({ ctaLabel, onCtaPress, style }: EmptyFeedProps) {
   const { t } = useTranslation();
   const { colors, spacing, typography } = useTheme();
   const label = ctaLabel ?? t('profile.searchConfigs.add');

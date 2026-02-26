@@ -35,7 +35,10 @@ function SSEBannerBridge() {
       const d = data as { matchScore?: number; applicationId?: string } | undefined;
       showBanner({
         title: '🤖',
-        body: d?.matchScore != null ? t('feed.matchScore', { score: d.matchScore }) : t('common.loading'),
+        body:
+          d?.matchScore != null
+            ? t('feed.matchScore', { score: d.matchScore })
+            : t('common.loading'),
         action: d?.applicationId
           ? () => router.push(`/(app)/kanban/${d.applicationId}` as never)
           : () => router.push('/(app)/kanban' as never),

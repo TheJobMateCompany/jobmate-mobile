@@ -244,21 +244,17 @@ export default function KanbanDetailScreen() {
 
   const handleDelete = useCallback(() => {
     if (!application) return;
-    Alert.alert(
-      t('kanban.deleteTitle'),
-      t('kanban.deleteConfirm'),
-      [
-        { text: t('common.cancel'), style: 'cancel' },
-        {
-          text: t('common.delete'),
-          style: 'destructive',
-          onPress: async () => {
-            const ok = await deleteApplication(application.id);
-            if (ok) router.back();
-          },
+    Alert.alert(t('kanban.deleteTitle'), t('kanban.deleteConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
+      {
+        text: t('common.delete'),
+        style: 'destructive',
+        onPress: async () => {
+          const ok = await deleteApplication(application.id);
+          if (ok) router.back();
         },
-      ],
-    );
+      },
+    ]);
   }, [application, deleteApplication, t]);
 
   const handleDateChange = useCallback(
@@ -613,7 +609,9 @@ export default function KanbanDetailScreen() {
             gap: spacing.sm,
           }}
         >
-          <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>{t('kanban.notes')}</Text>
+          <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
+            {t('kanban.notes')}
+          </Text>
           <TextInput
             value={noteText}
             onChangeText={setNoteText}
@@ -680,7 +678,9 @@ export default function KanbanDetailScreen() {
           )}
 
           <Button
-            label={application.relanceReminderAt ? t('kanban.editReminder') : t('kanban.setReminder')}
+            label={
+              application.relanceReminderAt ? t('kanban.editReminder') : t('kanban.setReminder')
+            }
             onPress={() => setShowDatePicker(true)}
             variant="ghost"
           />

@@ -245,7 +245,9 @@ export default function EditProfileScreen() {
             accessibilityLabel={t('profile.addSkill')}
             style={{ opacity: newSkill.trim() ? 1 : 0.3 }}
           >
-            <Text style={[typography.label, { color: colors.primary }]}>{t('profile.addSkill')}</Text>
+            <Text style={[typography.label, { color: colors.primary }]}>
+              {t('profile.addSkill')}
+            </Text>
           </TouchableOpacity>
         </View>
 
