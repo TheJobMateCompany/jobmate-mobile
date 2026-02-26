@@ -23,6 +23,7 @@ import {
 } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Stack, router } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { useAddManualJob } from '@/hooks/useAddManualJob';
 import { Button } from '@/components/ui/Button';
@@ -61,6 +62,7 @@ function toISODate(d: Date): string {
 
 export default function AddJobScreen() {
   const { colors, spacing, radius, typography } = useTheme();
+  const { t, i18n } = useTranslation();
   const { addByUrl, addManually, approve, isAdding, isApproving, error, clearError } =
     useAddManualJob();
 
@@ -103,7 +105,7 @@ export default function AddJobScreen() {
       setIsSearchingLocation(true);
       try {
         const resp = await fetch(
-          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&accept-language=fr`,
+          `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&addressdetails=1&accept-language=${i18n.language}`,
           { headers: { 'User-Agent': 'JobMate/1.0' } },
         );
         const data = (await resp.json()) as Array<{
@@ -123,7 +125,7 @@ export default function AddJobScreen() {
         setIsSearchingLocation(false);
       }
     }, 400);
-  }, []);
+  }, [i18n.language]);
 
   const selectLocation = (label: string) => {
     setForm((f) => ({ ...f, location: label }));
@@ -143,11 +145,11 @@ export default function AddJobScreen() {
     if (mode === 'url') {
       const trimmed = url.trim();
       if (!trimmed) {
-        Alert.alert('Champ requis', "Veuillez coller l'URL de l'offre.");
+        Alert.alert(t('common.required'), t('kanban.addJob.errors.urlRequired'));
         return;
       }
       if (!trimmed.startsWith('http')) {
-        Alert.alert('URL invalide', "L'URL doit commencer par http:// ou https://");
+        Alert.alert(t('kanban.addJob.errors.invalidUrlTitle'), t('kanban.addJob.errors.invalidUrl'));
         return;
       }
       const result = await addByUrl(trimmed);
@@ -158,10 +160,10 @@ export default function AddJobScreen() {
       }
     } else {
       if (!form.companyName.trim()) {
-        Alert.alert('Champ requis', "Le nom de l'entreprise est obligatoire.");
+        Alert.alert(t('common.required'), t('kanban.addJob.errors.companyRequired'));
         return;
       }
-      const effectiveDuration = contractType === 'Autre' ? customDuration.trim() : contractType;
+      const effectiveDuration = contractType === 'OTHER' ? customDuration.trim() : contractType;
       const result = await addManually({
         ...form,
         companyName: form.companyName.trim(),
@@ -173,7 +175,7 @@ export default function AddJobScreen() {
         setStep('review');
       }
     }
-  }, [mode, url, form, addByUrl, addManually, clearError]);
+  }, [mode, url, form, addByUrl, addManually, clearError, contractType, customDuration, t]);
 
   const handleApprove = useCallback(async () => {
     if (!jobFeedId) return;
@@ -222,13 +224,13 @@ export default function AddJobScreen() {
           style={modeTabStyle(mode === 'url')}
           onPress={() => handleModeChange('url')}
         >
-          <Text style={modeTabTextStyle(mode === 'url')}>Via URL</Text>
+          <Text style={modeTabTextStyle(mode === 'url')}>{t('kanban.addJob.modeUrl')}</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={modeTabStyle(mode === 'manual')}
           onPress={() => handleModeChange('manual')}
         >
-          <Text style={modeTabTextStyle(mode === 'manual')}>Manuellement</Text>
+          <Text style={modeTabTextStyle(mode === 'manual')}>{t('kanban.addJob.modeManual')}</Text>
         </TouchableOpacity>
       </View>
 
@@ -241,11 +243,10 @@ export default function AddJobScreen() {
               { color: colors.textSecondary, marginBottom: spacing.sm },
             ]}
           >
-            Collez l'URL de l'offre d'emploi. Nous allons récupérer automatiquement les
-            informations.
+            {t('kanban.addJob.urlHelp')}
           </Text>
           <Input
-            label="URL de l'offre"
+            label={t('kanban.addJob.urlLabel')}
             value={url}
             onChangeText={setUrl}
             autoCapitalize="none"
@@ -262,11 +263,11 @@ export default function AddJobScreen() {
               { color: colors.textSecondary, marginBottom: spacing.sm },
             ]}
           >
-            Renseignez les informations de l'offre à la main.
+            {t('kanban.addJob.manualHelp')}
           </Text>
 
           <Input
-            label="Entreprise *"
+            label={t('kanban.addJob.companyLabel')}
             value={form.companyName}
             onChangeText={(v) => setForm((f) => ({ ...f, companyName: v }))}
             returnKeyType="next"
@@ -277,7 +278,7 @@ export default function AddJobScreen() {
           <Text
             style={[typography.label, { color: colors.textSecondary, marginBottom: spacing.xs }]}
           >
-            Lieu
+            {t('feed.location')}
           </Text>
 
           {/* Chip si une ville est sélectionnée */}
@@ -336,6 +337,7 @@ export default function AddJobScreen() {
                   value={locationQuery}
                   onChangeText={handleLocationQuery}
                   placeholder="ex : Paris, Lyon, Remote…"
+                  placeholder={t('kanban.addJob.locationPlaceholder')}
                   placeholderTextColor={colors.textSecondary}
                   style={[
                     typography.bodyMedium,
@@ -388,7 +390,7 @@ export default function AddJobScreen() {
           <Text
             style={[typography.label, { color: colors.textSecondary, marginBottom: spacing.xs }]}
           >
-            Type de contrat
+            {t('feed.contractType')}
           </Text>
           <View
             style={{
@@ -427,33 +429,33 @@ export default function AddJobScreen() {
             {/* Chip "Autre" */}
             <TouchableOpacity
               onPress={() => {
-                setContractType(contractType === 'Autre' ? '' : 'Autre');
+                setContractType(contractType === 'OTHER' ? '' : 'OTHER');
                 setCustomDuration('');
               }}
               style={{
                 paddingHorizontal: spacing.md,
                 paddingVertical: spacing.xs,
                 borderRadius: radius.full,
-                backgroundColor: contractType === 'Autre' ? colors.primary : colors.surface,
+                backgroundColor: contractType === 'OTHER' ? colors.primary : colors.surface,
                 borderWidth: 1,
-                borderColor: contractType === 'Autre' ? colors.primary : colors.border,
+                borderColor: contractType === 'OTHER' ? colors.primary : colors.border,
               }}
             >
               <Text
                 style={[
                   typography.label,
-                  { color: contractType === 'Autre' ? '#fff' : colors.textPrimary },
+                  { color: contractType === 'OTHER' ? '#fff' : colors.textPrimary },
                 ]}
               >
-                Autre
+                {t('kanban.addJob.otherContract')}
               </Text>
             </TouchableOpacity>
           </View>
 
           {/* Champ libre si "Autre" */}
-          {contractType === 'Autre' && (
+          {contractType === 'OTHER' && (
             <Input
-              label="Précisez le type de contrat…"
+              label={t('kanban.addJob.customContract')}
               value={customDuration}
               onChangeText={setCustomDuration}
               returnKeyType="next"
@@ -462,13 +464,13 @@ export default function AddJobScreen() {
           )}
 
           {/* Espace si aucun chip actif */}
-          {contractType !== 'Autre' && <View style={{ marginBottom: spacing.md }} />}
+          {contractType !== 'OTHER' && <View style={{ marginBottom: spacing.md }} />}
 
           {/* Date de début — DatePicker */}
           <Text
             style={[typography.label, { color: colors.textSecondary, marginBottom: spacing.xs }]}
           >
-            Date de début
+            {t('kanban.startDate')}
           </Text>
           <TouchableOpacity
             onPress={() => setShowDatePicker(true)}
@@ -494,7 +496,13 @@ export default function AddJobScreen() {
                 },
               ]}
             >
-              {form.startDate ? formateDateFR(new Date(form.startDate)) : 'JJ/MM/AAAA'}
+              {form.startDate
+                ? new Date(form.startDate).toLocaleDateString(i18n.language === 'fr' ? 'fr-FR' : 'en-US', {
+                    day: '2-digit',
+                    month: '2-digit',
+                    year: 'numeric',
+                  })
+                : t('kanban.addJob.datePlaceholder')}
             </Text>
             <Text style={{ color: colors.textSecondary, fontSize: 16 }}>📅</Text>
           </TouchableOpacity>
@@ -545,7 +553,7 @@ export default function AddJobScreen() {
                   >
                     <TouchableOpacity onPress={() => setShowDatePicker(false)}>
                       <Text style={[typography.label, { color: colors.textSecondary }]}>
-                        Annuler
+                        {t('common.cancel')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity
@@ -554,7 +562,9 @@ export default function AddJobScreen() {
                         setForm((f) => ({ ...f, startDate: toISODate(pickerDate) }));
                       }}
                     >
-                      <Text style={[typography.label, { color: colors.primary }]}>Confirmer</Text>
+                      <Text style={[typography.label, { color: colors.primary }]}>
+                        {t('common.confirm')}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                   <DateTimePicker
@@ -563,7 +573,7 @@ export default function AddJobScreen() {
                     display="spinner"
                     minimumDate={new Date()}
                     onChange={(_e, d) => d && setPickerDate(d)}
-                    locale="fr-FR"
+                    locale={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
                   />
                 </View>
               </View>
@@ -574,12 +584,12 @@ export default function AddJobScreen() {
           <Text
             style={[typography.label, { color: colors.textSecondary, marginBottom: spacing.xs }]}
           >
-            Poste / Description
+            {t('kanban.addJob.profileWanted')}
           </Text>
           <TextInput
             value={form.profileWanted ?? ''}
             onChangeText={(v) => setForm((f) => ({ ...f, profileWanted: v }))}
-            placeholder="Description du poste, compétences recherchées…"
+            placeholder={t('kanban.addJob.profileWantedPlaceholder')}
             placeholderTextColor={colors.textSecondary}
             multiline
             numberOfLines={4}
@@ -601,12 +611,12 @@ export default function AddJobScreen() {
           <Text
             style={[typography.label, { color: colors.textSecondary, marginBottom: spacing.xs }]}
           >
-            Pourquoi cette entreprise ? (optionnel)
+            {t('kanban.addJob.whyUs')}
           </Text>
           <TextInput
             value={form.whyUs ?? ''}
             onChangeText={(v) => setForm((f) => ({ ...f, whyUs: v }))}
-            placeholder="Ce qui m'attire dans cette opportunité…"
+            placeholder={t('kanban.addJob.whyUsPlaceholder')}
             placeholderTextColor={colors.textSecondary}
             multiline
             numberOfLines={3}
@@ -640,7 +650,7 @@ export default function AddJobScreen() {
 
       {/* Bouton soumettre */}
       <Button
-        label={isAdding ? 'Récupération en cours…' : 'Continuer'}
+        label={isAdding ? t('common.loading') : t('common.next')}
         onPress={() => void handleSubmit()}
         loading={isAdding}
         disabled={isAdding}
@@ -674,7 +684,7 @@ export default function AddJobScreen() {
           { color: colors.textPrimary, textAlign: 'center', marginBottom: spacing.sm },
         ]}
       >
-        Offre récupérée !
+        {t('kanban.addJob.retrieved')}
       </Text>
 
       <Text
@@ -683,7 +693,9 @@ export default function AddJobScreen() {
           { color: colors.textSecondary, textAlign: 'center', marginBottom: spacing.xs },
         ]}
       >
-        {mode === 'url' ? `Source : ${addedLabel}` : `Entreprise : ${addedLabel}`}
+        {mode === 'url'
+          ? `${t('kanban.addJob.source')}: ${addedLabel}`
+          : `${t('kanban.addJob.company')}: ${addedLabel}`}
       </Text>
 
       <Text
@@ -697,8 +709,7 @@ export default function AddJobScreen() {
           },
         ]}
       >
-        En approuvant cette offre, elle sera ajoutée à votre board Kanban et notre IA l'analysera
-        automatiquement pour vous donner un score de compatibilité et des conseils personnalisés.
+        {t('kanban.addJob.reviewHelp')}
       </Text>
 
       {/* Erreur approve */}
@@ -714,7 +725,7 @@ export default function AddJobScreen() {
       )}
 
       <Button
-        label="Créer ma candidature"
+        label={t('kanban.addJob.createApplication')}
         onPress={() => void handleApprove()}
         loading={isApproving}
         disabled={isApproving}
@@ -722,7 +733,7 @@ export default function AddJobScreen() {
       />
 
       <Button
-        label="Ne pas approuver"
+        label={t('kanban.addJob.doNotApprove')}
         variant="ghost"
         onPress={handleCancel}
         disabled={isApproving}
@@ -737,7 +748,7 @@ export default function AddJobScreen() {
     <>
       <Stack.Screen
         options={{
-          title: step === 'form' ? 'Ajouter une offre' : 'Confirmer',
+          title: step === 'form' ? t('kanban.addJob.title') : t('common.confirm'),
           headerShown: true,
           headerBackTitle: '',
         }}

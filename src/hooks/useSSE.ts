@@ -13,6 +13,7 @@
 
 import { useEffect, useCallback, useRef } from 'react';
 import NetInfo from '@react-native-community/netinfo';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { useAuth } from '@/context/AuthContext';
 import { sseClient } from '@/lib/sse';
 
@@ -36,8 +37,14 @@ export function useSSE(): UseSSEReturn {
   const { token } = useAuth();
   // Ref pour tracker la connectivité réseau entre les callbacks NetInfo
   const isNetworkConnected = useRef<boolean>(true);
+  const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
   useEffect(() => {
+    if (isExpoGo) {
+      sseClient.disconnect();
+      return;
+    }
+
     // Pas de token → s'assurer que la connexion est fermée
     if (!token) {
       sseClient.disconnect();
@@ -66,7 +73,7 @@ export function useSSE(): UseSSEReturn {
       sseClient.disconnect();
       unsubNetInfo();
     };
-  }, [token]);
+  }, [token, isExpoGo]);
 
   /**
    * subscribe est stable (useCallback sans deps) car sseClient est un singleton.

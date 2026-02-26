@@ -1,8 +1,10 @@
 import { Stack } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 
 export default function ProfileLayout() {
   const { colors } = useTheme();
+  const { t } = useTranslation();
   return (
     <Stack
       screenOptions={{
@@ -18,7 +20,7 @@ export default function ProfileLayout() {
       <Stack.Screen name="edit" />
       <Stack.Screen
         name="search-config"
-        options={{ title: 'Configurations', headerBackTitle: 'Profil' }}
+        options={{ title: t('profile.searchConfigs.title'), headerBackTitle: t('profile.title') }}
       />
     </Stack>
   );

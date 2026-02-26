@@ -23,7 +23,31 @@
     "copySuccess": "Copié dans le presse-papier",
     "networkError": "Pas de connexion réseau",
     "offline": "Hors ligne",
-    "offlineBanner": "Vous êtes hors ligne — les données peuvent être obsolètes"
+    "offlineBanner": "Vous êtes hors ligne — les données peuvent être obsolètes",
+    "justNow": "À l'instant"
+  },
+
+  "errors": {
+    "invalidCredentials": "Email ou mot de passe incorrect.",
+    "userNotFound": "Aucun compte associé à cet email.",
+    "wrongPassword": "Mot de passe incorrect.",
+    "emailAlreadyUsed": "Cette adresse e-mail est déjà utilisée.",
+    "userAlreadyExists": "Un compte existe déjà avec cet email.",
+    "accountDisabled": "Ce compte a été désactivé. Contactez le support.",
+    "sessionExpired": "Session expirée. Veuillez vous reconnecter.",
+    "invalidSession": "Session invalide. Veuillez vous reconnecter.",
+    "forbidden": "Accès refusé.",
+    "network": "Impossible de joindre le serveur. Vérifiez votre connexion.",
+    "timeout": "La requête a pris trop de temps. Réessayez.",
+    "http5xx": "Le serveur rencontre un problème. Réessayez plus tard.",
+    "http429": "Trop de tentatives. Attendez quelques secondes.",
+    "http4xx": "Requête invalide. Vérifiez vos informations.",
+    "validation": "Certains champs sont invalides. Vérifiez vos informations.",
+    "tooShort": "Un champ est trop court.",
+    "tooLong": "Un champ est trop long.",
+    "fileTooLarge": "Le fichier est trop volumineux (max 10 Mo).",
+    "invalidFileType": "Format de fichier non supporté. Utilisez un PDF.",
+    "unexpected": "Une erreur inattendue est survenue. Réessayez."
   },
 
   "onboarding": {
@@ -72,7 +96,9 @@
   "feed": {
     "title": "Offres",
     "empty": "Aucune offre pour le moment",
+    "untitled": "Offre sans titre",
     "emptySubtitle": "Configurez une recherche dans votre profil pour recevoir des offres.",
+    "description": "Description",
     "score": "Score",
     "matchScore": "Compatibilité : {{score}}%",
     "approve": "Intéressé",
@@ -81,6 +107,7 @@
     "rejected": "Offre ignorée",
     "coverLetter": "Lettre de motivation",
     "copyCoverLetter": "Copier la lettre",
+    "coverLetterPending": "La lettre de motivation sera générée automatiquement après approbation de l'offre.",
     "cvSuggestions": "Suggestions pour votre CV",
     "pros": "Points forts",
     "cons": "Points faibles",
@@ -106,13 +133,61 @@
 
   "kanban": {
     "title": "Mes candidatures",
+    "addManual": "Ajouter une offre",
+    "manualApplication": "Candidature manuelle",
+    "unknownJob": "Offre inconnue",
     "empty": "Aucune candidature",
     "emptySubtitle": "Approuvez des offres depuis le Feed pour les voir apparaître ici.",
+    "jobDetails": "Détails de l'offre",
+    "salaryFrom": "Dès",
+    "salaryUntil": "Jusqu'à",
+    "startDate": "Début",
+    "duration": "Durée",
+    "aboutCompany": "À propos de l'entreprise",
+    "whyJoin": "Pourquoi nous rejoindre ?",
+    "jobDescription": "Description du poste",
+    "aiPending": "L'analyse IA sera disponible après traitement.",
+    "setReminder": "Définir un rappel",
+    "editReminder": "Modifier la date",
+    "deleteTitle": "Supprimer la candidature",
+    "deleteConfirm": "Cette candidature sera définitivement supprimée. Cette action est irréversible.",
+    "deleteAction": "Supprimer la candidature",
+    "addJob": {
+      "title": "Ajouter une offre",
+      "modeUrl": "Via URL",
+      "modeManual": "Manuellement",
+      "urlHelp": "Collez l'URL de l'offre d'emploi. Nous allons récupérer automatiquement les informations.",
+      "urlLabel": "URL de l'offre",
+      "manualHelp": "Renseignez les informations de l'offre à la main.",
+      "companyLabel": "Entreprise *",
+      "locationPlaceholder": "ex : Paris, Lyon, Remote…",
+      "otherContract": "Autre",
+      "customContract": "Précisez le type de contrat…",
+      "datePlaceholder": "JJ/MM/AAAA",
+      "profileWanted": "Poste / Description",
+      "profileWantedPlaceholder": "Description du poste, compétences recherchées…",
+      "whyUs": "Pourquoi cette entreprise ? (optionnel)",
+      "whyUsPlaceholder": "Ce qui m'attire dans cette opportunité…",
+      "retrieved": "Offre récupérée !",
+      "source": "Source",
+      "company": "Entreprise",
+      "reviewHelp": "En approuvant cette offre, elle sera ajoutée à votre board Kanban et notre IA l'analysera automatiquement pour vous donner un score de compatibilité et des conseils personnalisés.",
+      "createApplication": "Créer ma candidature",
+      "doNotApprove": "Ne pas approuver",
+      "errors": {
+        "urlRequired": "Veuillez coller l'URL de l'offre.",
+        "invalidUrlTitle": "URL invalide",
+        "invalidUrl": "L'URL doit commencer par http:// ou https://",
+        "companyRequired": "Le nom de l'entreprise est obligatoire."
+      }
+    },
     "status": {
+      "TO_APPLY": "À postuler",
       "INTERESTED": "Intéressé",
       "APPLIED": "Candidature envoyée",
       "INTERVIEW": "Entretien",
       "OFFER": "Offre reçue",
+      "HIRED": "Embauché 🎉",
       "REJECTED": "Refusé",
       "WITHDRAWN": "Retiré"
     },
@@ -142,6 +217,10 @@
     "experiences": "Expériences",
     "educations": "Formations",
     "cv": "CV",
+    "cvNone": "Aucun CV importé — formats acceptés : PDF, max 10 Mo.",
+    "cvFileLabel": "Fichier CV : {{fileName}}",
+    "uploadingFile": "Envoi du fichier…",
+    "replaceCv": "Remplacer",
     "uploadCv": "Importer un CV (PDF)",
     "uploadCvProgress": "Import en cours… {{progress}}%",
     "uploadCvSuccess": "CV importé avec succès",
@@ -154,6 +233,13 @@
     "addEducation": "Ajouter une formation",
     "addSkill": "Ajouter une compétence",
     "present": "Présent",
+    "completion": {
+      "title": "Complétion du profil",
+      "msgStart": "Commencez par renseigner votre nom et votre statut.",
+      "msgVeryIncomplete": "Votre profil est très incomplet. Ajoutez vos compétences et expériences.",
+      "msgContinue": "Continuez ! Un profil complet augmente vos chances de matching.",
+      "msgAlmost": "Presque là ! Ajoutez votre CV ou vos certifications pour terminer."
+    },
     "searchConfigs": {
       "title": "Configurations de recherche",
       "empty": "Aucune configuration",
@@ -175,11 +261,34 @@
       "contractTypes": "Types de contrat",
       "coverLetterTemplate": "Modèle de lettre de motivation",
       "coverLetterPlaceholder": "Rédigez un modèle que l'IA adaptera à chaque offre…",
+      "remotePolicy": {
+        "REMOTE": "100% remote",
+        "HYBRID": "Hybride",
+        "ON_SITE": "Sur site"
+      },
       "active": "Recherche active",
       "inactive": "En pause",
       "activate": "Activer",
       "deactivate": "Mettre en pause",
-      "deleteConfirm": "Supprimer cette configuration ?"
+      "deleteConfirm": "Supprimer cette configuration ?",
+      "deleteError": "Impossible de supprimer cette configuration.",
+      "createError": "Impossible de créer la configuration. Réessayez.",
+      "updateError": "Impossible de sauvegarder la configuration."
+    },
+    "edit": {
+      "fullName": "Nom complet",
+      "fullNameRequired": "Le nom complet est requis.",
+      "saveError": "Impossible de sauvegarder les modifications.",
+      "statusTitle": "Statut",
+      "newSkill": "Nouvelle compétence",
+      "addSkillPlaceholder": "Ajouter une compétence…",
+      "status": {
+        "STUDENT": "Étudiant",
+        "JUNIOR": "Junior",
+        "MID": "Confirmé",
+        "SENIOR": "Senior",
+        "OPEN_TO_WORK": "En recherche"
+      }
     }
   },
 
@@ -208,11 +317,27 @@
     "account": "Compte",
     "editProfile": "Modifier le profil",
     "notifications": "Notifications",
+    "notificationsDisabledTitle": "Notifications désactivées",
+    "notificationsDisabledIos": "Activez les notifications dans Réglages > JobMate > Notifications.",
+    "notificationsDisabledAndroid": "Activez les notifications dans Paramètres > Applications > JobMate.",
     "privacy": "Confidentialité",
     "about": "À propos",
     "version": "Version {{version}}",
+    "reviewTutorial": "Revoir le tutoriel",
+    "reviewTutorialConfirm": "Vous serez redirigé vers l'écran d'introduction au prochain démarrage.",
+    "hints": {
+      "notifications": "Active ou désactive les notifications push",
+      "editProfile": "Ouvrir l'écran d'édition du profil",
+      "logout": "Se déconnecter de l'application",
+      "deleteAccount": "Supprimer définitivement votre compte et toutes vos données",
+      "version": "Version de l'application",
+      "reviewTutorial": "Réinitialise l'onboarding pour le voir au prochain démarrage"
+    },
     "logout": "Se déconnecter",
     "deleteAccount": "Supprimer mon compte",
-    "deleteAccountConfirm": "Cette action est irréversible. Voulez-vous vraiment supprimer votre compte ?"
+    "deleteAccountConfirm": "Cette action est irréversible. Voulez-vous vraiment supprimer votre compte ?",
+    "deleteAccountFinalTitle": "Confirmation finale",
+    "deleteAccountFinalConfirm": "Toutes vos données seront effacées définitivement.",
+    "deleteAccountFinalAction": "Supprimer définitivement"
   }
 }

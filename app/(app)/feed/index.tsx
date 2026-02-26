@@ -15,11 +15,14 @@ import {
   FlatList,
   View,
   Text,
+  ActivityIndicator,
   RefreshControl,
   TouchableOpacity,
   type ListRenderItem,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { useTranslation } from 'react-i18next';
 import { useJobFeed } from '@/hooks/useJobFeed';
 import { useTheme } from '@/hooks/useTheme';
 import { JobCard } from '@/components/feed/JobCard';
@@ -30,16 +33,20 @@ import type { JobFeedItem, JobStatus } from '@/types/api';
 
 // ─── Segmented control ────────────────────────────────────────────────────────
 
-const FILTERS: { label: string; value: JobStatus }[] = [
-  { label: 'À traiter', value: 'PENDING' },
-  { label: 'Approuvés', value: 'APPROVED' },
-  { label: 'Rejetés', value: 'REJECTED' },
-];
+const FILTER_VALUES: JobStatus[] = ['PENDING', 'APPROVED', 'REJECTED'];
 
 // ─── Écran ────────────────────────────────────────────────────────────────────
 
 export default function FeedScreen() {
+  const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
+  const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+    const filters: { label: string; value: JobStatus }[] = [
+      { label: t('feed.filter.pending'), value: FILTER_VALUES[0] },
+      { label: t('feed.filter.approved'), value: FILTER_VALUES[1] },
+      { label: t('feed.filter.rejected'), value: FILTER_VALUES[2] },
+    ];
+
   const [activeStatus, setActiveStatus] = useState<JobStatus>('PENDING');
   const { jobs, isLoading, isRefreshing, isSubmitting, error, fetchFeed, approveJob, rejectJob } =
     useJobFeed();
@@ -57,16 +64,22 @@ export default function FeedScreen() {
   // ─── Render item ────────────────────────────────────────────────────────────
 
   const renderItem = useCallback<ListRenderItem<JobFeedItem>>(
-    ({ item }) => (
-      <SwipeRow
-        onApprove={activeStatus === 'PENDING' ? () => void approveJob(item.id) : undefined}
-        onReject={activeStatus === 'PENDING' ? () => void rejectJob(item.id) : undefined}
-        disabled={isSubmitting}
-      >
-        <JobCard job={item} onPress={() => router.push(`/feed/${item.id}`)} />
-      </SwipeRow>
-    ),
-    [activeStatus, approveJob, rejectJob, isSubmitting],
+    ({ item }) => {
+      if (isExpoGo) {
+        return <JobCard job={item} onPress={() => router.push(`/feed/${item.id}`)} />;
+      }
+
+      return (
+        <SwipeRow
+          onApprove={activeStatus === 'PENDING' ? () => void approveJob(item.id) : undefined}
+          onReject={activeStatus === 'PENDING' ? () => void rejectJob(item.id) : undefined}
+          disabled={isSubmitting}
+        >
+          <JobCard job={item} onPress={() => router.push(`/feed/${item.id}`)} />
+        </SwipeRow>
+      );
+    },
+    [isExpoGo, activeStatus, approveJob, rejectJob, isSubmitting],
   );
 
   // ─── Header segmented control ───────────────────────────────────────────────
@@ -79,7 +92,7 @@ export default function FeedScreen() {
         paddingBottom: spacing.md,
       }}
     >
-      {FILTERS.map((f) => {
+      {filters.map((f) => {
         const active = f.value === activeStatus;
         return (
           <TouchableOpacity
@@ -108,7 +121,7 @@ export default function FeedScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: colors.background }}>
-      <Stack.Screen options={{ title: 'Offres', headerShown: true }} />
+      <Stack.Screen options={{ title: t('feed.title'), headerShown: true }} />
 
       <View style={{ flex: 1, paddingHorizontal: spacing.md }}>
         {/* Filtre statut — toujours visible */}
@@ -128,7 +141,13 @@ export default function FeedScreen() {
 
         {/* Skeleton chargement initial */}
         {isLoading ? (
-          <JobCardSkeletonList />
+          isExpoGo ? (
+            <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+              <ActivityIndicator color={colors.primary} />
+            </View>
+          ) : (
+            <JobCardSkeletonList />
+          )
         ) : (
           <FlatList
             data={jobs}
@@ -146,7 +165,7 @@ export default function FeedScreen() {
             }
             ListEmptyComponent={
               <EmptyFeed
-                ctaLabel="Configurer une recherche"
+                ctaLabel={t('profile.searchConfigs.add')}
                 onCtaPress={() => router.push('/profile/search-config/new')}
                 style={{ flex: 1 }}
               />

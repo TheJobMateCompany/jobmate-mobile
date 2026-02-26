@@ -16,6 +16,7 @@
  */
 
 import { View, Text, TouchableOpacity, ActivityIndicator, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 
@@ -53,6 +54,7 @@ export function CvUploadCard({
   onUpload,
   style,
 }: CvUploadCardProps) {
+  const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
 
   const fileName = cvUrl ? fileNameFromUrl(cvUrl) : null;
@@ -74,13 +76,13 @@ export function CvUploadCard({
       ]}
     >
       {/* Label */}
-      <Text style={[typography.label, { color: colors.textPrimary }]}>Curriculum Vitae</Text>
+      <Text style={[typography.label, { color: colors.textPrimary }]}>{t('profile.cv')}</Text>
 
       {/* ── État : upload en cours ── */}
       {isUploading && (
         <View style={{ gap: spacing.xs }}>
           <Text style={[typography.caption, { color: colors.textSecondary }]}>
-            Envoi du fichier…
+            {t('profile.uploadingFile')}
           </Text>
           <ProgressBar progress={progress} showLabel trackHeight={6} />
         </View>
@@ -90,7 +92,7 @@ export function CvUploadCard({
       {!isUploading && isAnalyzing && (
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.sm }}>
           <ActivityIndicator size="small" color={colors.primary} />
-          <Text style={[typography.caption, { color: colors.primary }]}>Analyse IA en cours…</Text>
+          <Text style={[typography.caption, { color: colors.primary }]}>{t('profile.cvParsing')}</Text>
         </View>
       )}
 
@@ -108,7 +110,7 @@ export function CvUploadCard({
             gap: spacing.xs,
           }}
           accessibilityRole="text"
-          accessibilityLabel={`Fichier CV : ${fileName}`}
+          accessibilityLabel={t('profile.cvFileLabel', { fileName })}
         >
           {/* Icône PDF textuelle */}
           <Text style={[typography.caption, { color: colors.primary, fontWeight: '700' }]}>
@@ -126,7 +128,7 @@ export function CvUploadCard({
       {/* ── État : pas de CV ── */}
       {!isUploading && !isAnalyzing && !fileName && (
         <Text style={[typography.caption, { color: colors.textSecondary }]}>
-          Aucun CV importé — formats acceptés : PDF, max 10 Mo.
+          {t('profile.cvNone')}
         </Text>
       )}
 
@@ -135,7 +137,7 @@ export function CvUploadCard({
         onPress={onUpload}
         disabled={!isInteractive}
         accessibilityRole="button"
-        accessibilityLabel={fileName ? 'Remplacer le CV' : 'Importer mon CV'}
+        accessibilityLabel={fileName ? t('profile.replaceCv') : t('profile.uploadCv')}
         style={{
           alignSelf: 'flex-start',
           opacity: isInteractive ? 1 : 0.4,
@@ -155,7 +157,7 @@ export function CvUploadCard({
             },
           ]}
         >
-          {fileName ? 'Remplacer' : 'Importer mon CV'}
+          {fileName ? t('profile.replaceCv') : t('profile.uploadCv')}
         </Text>
       </TouchableOpacity>
     </View>

@@ -30,19 +30,12 @@ import { useAuth } from '@/context/AuthContext';
 import { changeLanguage, getCurrentLanguage } from '@/i18n';
 import { ONBOARDING_KEY } from '../../(auth)/onboarding';
 import type { ThemeMode } from '@/types/theme';
+import { useTranslation } from 'react-i18next';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-const THEME_OPTIONS: { label: string; value: ThemeMode }[] = [
-  { label: 'Auto', value: 'system' },
-  { label: 'Clair', value: 'light' },
-  { label: 'Sombre', value: 'dark' },
-];
-
-const LANG_OPTIONS: { label: string; value: string }[] = [
-  { label: 'Français', value: 'fr' },
-  { label: 'English', value: 'en' },
-];
+const THEME_VALUES: ThemeMode[] = ['system', 'light', 'dark'];
+const LANG_VALUES: Array<'fr' | 'en'> = ['fr', 'en'];
 
 // ─── Atoms ────────────────────────────────────────────────────────────────────
 
@@ -194,12 +187,24 @@ function SegmentedControl<T extends string>({
 // ─── Écran principal ──────────────────────────────────────────────────────────
 
 export default function SettingsScreen() {
+  const { t } = useTranslation();
   const { colors, spacing, typography, mode, setMode } = useTheme();
   const { logout } = useAuth();
 
   const [lang, setLangState] = useState(getCurrentLanguage());
   const [pushEnabled, setPushEnabled] = useState(false);
   const [checkingPerms, setCheckingPerms] = useState(false);
+
+  const themeOptions: { label: string; value: ThemeMode }[] = [
+    { label: t('settings.themeSystem'), value: THEME_VALUES[0] },
+    { label: t('settings.themeLight'), value: THEME_VALUES[1] },
+    { label: t('settings.themeDark'), value: THEME_VALUES[2] },
+  ];
+
+  const langOptions: { label: string; value: 'fr' | 'en' }[] = [
+    { label: t('settings.languageFr'), value: LANG_VALUES[0] },
+    { label: t('settings.languageEn'), value: LANG_VALUES[1] },
+  ];
 
   // ── Notifications toggle ────────────────────────────────────────────────────
 
@@ -211,10 +216,10 @@ export default function SettingsScreen() {
         setPushEnabled(status === 'granted');
         if (status !== 'granted') {
           Alert.alert(
-            'Notifications désactivées',
+            t('settings.notificationsDisabledTitle'),
             Platform.OS === 'ios'
-              ? 'Activez les notifications dans Réglages > JobMate > Notifications.'
-              : 'Activez les notifications dans Paramètres > Applications > JobMate.',
+              ? t('settings.notificationsDisabledIos')
+              : t('settings.notificationsDisabledAndroid'),
           );
         }
       } finally {
@@ -223,7 +228,7 @@ export default function SettingsScreen() {
     } else {
       setPushEnabled(false);
     }
-  }, []);
+  }, [t]);
 
   // ── Thème ───────────────────────────────────────────────────────────────────
 
@@ -247,12 +252,12 @@ export default function SettingsScreen() {
 
   const handleResetTutorial = useCallback(() => {
     Alert.alert(
-      'Revoir le tutoriel',
-      "Vous serez redirigé vers l'écran d'introduction au prochain démarrage.",
+      t('settings.reviewTutorial'),
+      t('settings.reviewTutorialConfirm'),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Confirmer',
+          text: t('common.confirm'),
           onPress: async () => {
             await AsyncStorage.removeItem(ONBOARDING_KEY);
             await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -260,15 +265,15 @@ export default function SettingsScreen() {
         },
       ],
     );
-  }, []);
+  }, [t]);
 
   // ── Déconnexion ─────────────────────────────────────────────────────────────
 
   const handleLogout = useCallback(() => {
-    Alert.alert('Déconnexion', 'Voulez-vous vraiment vous déconnecter\u00a0?', [
-      { text: 'Annuler', style: 'cancel' },
+    Alert.alert(t('auth.logout'), t('auth.logoutConfirm'), [
+      { text: t('common.cancel'), style: 'cancel' },
       {
-        text: 'Se déconnecter',
+        text: t('settings.logout'),
         style: 'destructive',
         onPress: async () => {
           await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
@@ -276,27 +281,27 @@ export default function SettingsScreen() {
         },
       },
     ]);
-  }, [logout]);
+  }, [logout, t]);
 
   // ── Suppression compte ──────────────────────────────────────────────────────
 
   const handleDeleteAccount = useCallback(() => {
     Alert.alert(
-      'Supprimer mon compte',
-      'Cette action est irréversible. Voulez-vous vraiment supprimer votre compte\u00a0?',
+      t('settings.deleteAccount'),
+      t('settings.deleteAccountConfirm'),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Supprimer',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: () => {
             Alert.alert(
-              'Confirmation finale',
-              'Toutes vos données seront effacées définitivement.',
+              t('settings.deleteAccountFinalTitle'),
+              t('settings.deleteAccountFinalConfirm'),
               [
-                { text: 'Annuler', style: 'cancel' },
+                { text: t('common.cancel'), style: 'cancel' },
                 {
-                  text: 'Supprimer définitivement',
+                  text: t('settings.deleteAccountFinalAction'),
                   style: 'destructive',
                   onPress: async () => {
                     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
@@ -310,7 +315,7 @@ export default function SettingsScreen() {
         },
       ],
     );
-  }, [logout]);
+  }, [logout, t]);
 
   const version = Constants.expoConfig?.version ?? '1.0.0';
 
@@ -321,7 +326,7 @@ export default function SettingsScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: 'Paramètres',
+          title: t('settings.title'),
           headerStyle: { backgroundColor: colors.surface },
           headerTintColor: colors.textPrimary,
           headerTitleStyle: { ...(typography.headingMedium as object) },
@@ -334,10 +339,10 @@ export default function SettingsScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* ── Apparence ──────────────────────────────────────────────────────── */}
-        <SectionHeader title="Apparence" />
+        <SectionHeader title={t('settings.appearance')} />
         <SegmentedControl
-          accessibilityLabel="Sélecteur de thème"
-          options={THEME_OPTIONS}
+          accessibilityLabel={t('settings.theme')}
+          options={themeOptions}
           value={mode}
           onChange={(v) => {
             void handleThemeChange(v);
@@ -345,10 +350,10 @@ export default function SettingsScreen() {
         />
 
         {/* ── Langue ─────────────────────────────────────────────────────────── */}
-        <SectionHeader title="Langue" />
+        <SectionHeader title={t('settings.language')} />
         <SegmentedControl
-          accessibilityLabel="Sélecteur de langue"
-          options={LANG_OPTIONS}
+          accessibilityLabel={t('settings.language')}
+          options={langOptions}
           value={lang}
           onChange={(v) => {
             void handleLangChange(v);
@@ -356,10 +361,10 @@ export default function SettingsScreen() {
         />
 
         {/* ── Notifications ───────────────────────────────────────────────────── */}
-        <SectionHeader title="Notifications" />
+        <SectionHeader title={t('settings.notifications')} />
         <Row
-          label="Notifications push"
-          accessibilityHint="Active ou désactive les notifications push"
+          label={t('settings.notifications')}
+          accessibilityHint={t('settings.hints.notifications')}
           right={
             <Switch
               value={pushEnabled}
@@ -369,7 +374,7 @@ export default function SettingsScreen() {
               disabled={checkingPerms}
               trackColor={{ false: colors.border, true: colors.primary }}
               thumbColor={colors.surface}
-              accessibilityLabel="Notifications push"
+              accessibilityLabel={t('settings.notifications')}
               accessibilityRole="switch"
               accessibilityState={{ checked: pushEnabled }}
             />
@@ -377,32 +382,35 @@ export default function SettingsScreen() {
         />
 
         {/* ── Compte ──────────────────────────────────────────────────────────── */}
-        <SectionHeader title="Compte" />
+        <SectionHeader title={t('settings.account')} />
         <Row
-          label="Modifier le profil"
+          label={t('settings.editProfile')}
           onPress={() => router.push('/(app)/profile/edit' as never)}
-          accessibilityHint="Ouvrir l'écran d'édition du profil"
+          accessibilityHint={t('settings.hints.editProfile')}
           right={<Text style={[typography.bodyMedium, { color: colors.textDisabled }]}>›</Text>}
         />
         <Row
-          label="Se déconnecter"
+          label={t('settings.logout')}
           onPress={handleLogout}
-          accessibilityHint="Se déconnecter de l'application"
+          accessibilityHint={t('settings.hints.logout')}
         />
         <Row
-          label="Supprimer mon compte"
+          label={t('settings.deleteAccount')}
           onPress={handleDeleteAccount}
           destructive
-          accessibilityHint="Supprimer définitivement votre compte et toutes vos données"
+          accessibilityHint={t('settings.hints.deleteAccount')}
         />
 
         {/* ── À propos ────────────────────────────────────────────────────────── */}
-        <SectionHeader title="À propos" />
-        <Row label={`Version ${version}`} accessibilityHint="Version de l'application" />
+        <SectionHeader title={t('settings.about')} />
         <Row
-          label="Revoir le tutoriel"
+          label={t('settings.version', { version })}
+          accessibilityHint={t('settings.hints.version')}
+        />
+        <Row
+          label={t('settings.reviewTutorial')}
           onPress={handleResetTutorial}
-          accessibilityHint="Réinitialise l'onboarding pour le voir au prochain démarrage"
+          accessibilityHint={t('settings.hints.reviewTutorial')}
           right={<Text style={[typography.bodyMedium, { color: colors.textDisabled }]}>›</Text>}
         />
       </ScrollView>

@@ -25,6 +25,7 @@ import { useSSE } from './useSSE';
 import { gqlUpload } from '@/lib/graphql/client';
 import { UPLOAD_CV_MUTATION } from '@/lib/graphql/mutations';
 import { mapApiError } from '@/lib/errors';
+import i18n from '@/i18n';
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
 
@@ -129,14 +130,13 @@ export function useUploadCV(options?: UseUploadCVOptions): UseUploadCVReturn {
 
     // 2. Validation du type MIME
     if (asset.mimeType && asset.mimeType !== 'application/pdf') {
-      setError('Format invalide — seuls les fichiers PDF sont acceptés.');
+      setError(i18n.t('errors.invalidFileType'));
       return null;
     }
 
     // 3. Validation de la taille (expo-document-picker expose `size` en octets)
     if (asset.size !== undefined && asset.size !== null && asset.size > MAX_FILE_SIZE_BYTES) {
-      const sizeMb = (asset.size / (1024 * 1024)).toFixed(1);
-      setError(`Fichier trop volumineux (${sizeMb} Mo — max 10 Mo).`);
+      setError(i18n.t('errors.fileTooLarge'));
       return null;
     }
 

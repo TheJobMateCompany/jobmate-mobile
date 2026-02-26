@@ -10,6 +10,7 @@
  */
 
 import { View, Text, TouchableOpacity, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { Badge } from '@/components/ui/Badge';
 import type { BadgeVariant } from '@/components/ui/Badge';
@@ -31,7 +32,7 @@ function parseRawData(rawData: Record<string, unknown>): ParsedJobData {
     return typeof v === 'string' && v.trim() ? v.trim() : null;
   };
   return {
-    title: str('title') ?? str('poste') ?? 'Offre sans titre',
+    title: str('title') ?? str('poste') ?? '',
     company: str('company') ?? str('entreprise') ?? null,
     location: str('location') ?? str('lieu') ?? null,
     remotePolicy: str('remotePolicy') ?? str('remote_policy') ?? null,
@@ -39,21 +40,26 @@ function parseRawData(rawData: Record<string, unknown>): ParsedJobData {
   };
 }
 
-function formatRelativeDate(iso: string): string {
+function formatRelativeDate(iso: string, language: string, justNowLabel: string): string {
   const diff = Date.now() - new Date(iso).getTime();
   const minutes = Math.floor(diff / 60_000);
-  if (minutes < 1) return "À l'instant";
-  if (minutes < 60) return `il y a ${minutes} min`;
+  if (minutes < 1) return justNowLabel;
+
+  const rtf = new Intl.RelativeTimeFormat(language === 'fr' ? 'fr-FR' : 'en-US', {
+    numeric: 'auto',
+  });
+
+  if (minutes < 60) return rtf.format(-minutes, 'minute');
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `il y a ${hours} h`;
+  if (hours < 24) return rtf.format(-hours, 'hour');
   const days = Math.floor(hours / 24);
-  return `il y a ${days} j`;
+  return rtf.format(-days, 'day');
 }
 
-const STATUS_LABEL: Record<JobStatus, string> = {
-  PENDING: 'À traiter',
-  APPROVED: 'Approuvé',
-  REJECTED: 'Rejeté',
+const STATUS_LABEL_KEY: Record<JobStatus, string> = {
+  PENDING: 'feed.filter.pending',
+  APPROVED: 'feed.filter.approved',
+  REJECTED: 'feed.filter.rejected',
 };
 
 const STATUS_VARIANT: Record<JobStatus, BadgeVariant> = {
@@ -73,8 +79,11 @@ export interface JobCardProps {
 // ─── Composant ────────────────────────────────────────────────────────────────
 
 export function JobCard({ job, onPress, style }: JobCardProps) {
+  const { t, i18n } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
-  const { title, company, location, remotePolicy } = parseRawData(job.rawData);
+  const parsed = parseRawData(job.rawData);
+  const title = parsed.title || t('feed.untitled');
+  const { company, location, remotePolicy } = parsed;
 
   return (
     <TouchableOpacity
@@ -128,12 +137,12 @@ export function JobCard({ job, onPress, style }: JobCardProps) {
           marginTop: spacing.sm,
         }}
       >
-        <Badge label={STATUS_LABEL[job.status]} variant={STATUS_VARIANT[job.status]} />
+        <Badge label={t(STATUS_LABEL_KEY[job.status])} variant={STATUS_VARIANT[job.status]} />
         {remotePolicy && <Badge label={remotePolicy} variant="neutral" />}
         {/* Spacer flexible */}
         <View style={{ flex: 1 }} />
         <Text style={[typography.caption, { color: colors.textDisabled }]}>
-          {formatRelativeDate(job.createdAt)}
+          {formatRelativeDate(job.createdAt, i18n.language, t('common.justNow'))}
         </Text>
       </View>
     </TouchableOpacity>

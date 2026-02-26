@@ -10,6 +10,7 @@
 import { useCallback } from 'react';
 import { View, Text, ScrollView, Alert, ActivityIndicator } from 'react-native';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useSearchConfigs } from '@/hooks/useSearchConfigs';
 import { useTheme } from '@/hooks/useTheme';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
@@ -18,6 +19,7 @@ import type { CreateSearchConfigInput } from '@/types/api';
 
 export default function EditSearchConfigScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
+  const { t } = useTranslation();
   const { colors, spacing, typography } = useTheme();
   const { configs, isSubmitting, isLoading, updateConfig } = useSearchConfigs();
 
@@ -30,10 +32,10 @@ export default function EditSearchConfigScreen() {
         await updateConfig(id, input);
         router.back();
       } catch {
-        Alert.alert('Erreur', 'Impossible de sauvegarder la configuration.');
+        Alert.alert(t('common.error'), t('profile.searchConfigs.updateError'));
       }
     },
-    [id, updateConfig],
+    [id, updateConfig, t],
   );
 
   // ── Config non trouvée (chargement en cours ou id invalide) ──
@@ -45,7 +47,7 @@ export default function EditSearchConfigScreen() {
             <ActivityIndicator size="large" color={colors.primary} />
           ) : (
             <Text style={[typography.bodyMedium, { color: colors.textSecondary }]}>
-              Configuration introuvable.
+              {t('common.noResults')}
             </Text>
           )}
         </View>
@@ -71,7 +73,7 @@ export default function EditSearchConfigScreen() {
     <ScreenWrapper padded={false}>
       <Stack.Screen
         options={{
-          title: config.jobTitles.slice(0, 1).join('') || 'Modifier',
+          title: config.jobTitles.slice(0, 1).join('') || t('common.edit'),
         }}
       />
       <ScrollView
@@ -83,7 +85,7 @@ export default function EditSearchConfigScreen() {
           initialValues={initialValues}
           onSubmit={handleSubmit}
           isLoading={isSubmitting}
-          submitLabel="Sauvegarder"
+          submitLabel={t('common.save')}
         />
       </ScrollView>
     </ScreenWrapper>

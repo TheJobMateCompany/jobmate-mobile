@@ -40,6 +40,7 @@ export async function gqlRequest<T>(
   const headers: Record<string, string> = {
     'Content-Type': 'application/json',
     Accept: 'application/json',
+    'apollo-require-preflight': 'true',
   };
 
   if (token) {
@@ -95,6 +96,7 @@ export async function gqlUpload<T>(
 
   const headers: Record<string, string> = {
     Accept: 'application/json',
+    'apollo-require-preflight': 'true',
   };
 
   if (token) {
@@ -107,11 +109,12 @@ export async function gqlUpload<T>(
     body: formData,
   });
 
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-  }
+  const json: GQLResponse<T> = await response.json().catch(() => ({}));
 
-  const json: GQLResponse<T> = await response.json();
+  if (!response.ok) {
+    const gqlMessage = json.errors?.[0]?.message;
+    throw new Error(gqlMessage ?? `HTTP ${response.status}: ${response.statusText}`);
+  }
 
   if (json.errors && json.errors.length > 0) {
     throw new Error(json.errors[0].message);

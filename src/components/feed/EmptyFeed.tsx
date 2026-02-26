@@ -9,6 +9,7 @@
  */
 
 import { View, Text, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 
@@ -20,11 +21,13 @@ export interface EmptyFeedProps {
 }
 
 export function EmptyFeed({
-  ctaLabel = 'Configurer une recherche',
+  ctaLabel,
   onCtaPress,
   style,
 }: EmptyFeedProps) {
+  const { t } = useTranslation();
   const { colors, spacing, typography } = useTheme();
+  const label = ctaLabel ?? t('profile.searchConfigs.add');
 
   return (
     <View
@@ -45,7 +48,7 @@ export function EmptyFeed({
       </Text>
 
       <Text style={[typography.headingMedium, { color: colors.textPrimary, textAlign: 'center' }]}>
-        Aucune offre pour l'instant
+        {t('feed.empty')}
       </Text>
 
       <Text
@@ -54,13 +57,12 @@ export function EmptyFeed({
           { color: colors.textSecondary, textAlign: 'center', lineHeight: 22 },
         ]}
       >
-        L'IA recherche des offres correspondant à vos configurations.
-        {'\n'}Revenez dans quelques instants ou ajoutez une nouvelle configuration de recherche.
+        {t('feed.emptySubtitle')}
       </Text>
 
       {onCtaPress && (
         <Button
-          label={ctaLabel}
+          label={label}
           onPress={onCtaPress}
           variant="secondary"
           style={{ marginTop: spacing.sm }}

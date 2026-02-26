@@ -12,6 +12,7 @@
 import { useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { Stack, router, useFocusEffect } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useApplications } from '@/hooks/useApplications';
 import { useJobFeed } from '@/hooks/useJobFeed';
 import { useTheme } from '@/hooks/useTheme';
@@ -19,6 +20,7 @@ import { KanbanBoard, type JobMeta } from '@/components/kanban/KanbanBoard';
 
 export default function KanbanScreen() {
   const { colors, spacing, typography } = useTheme();
+  const { t } = useTranslation();
 
   const { applications, isLoading, isRefreshing, submittingIds, error, fetchApplications } =
     useApplications();
@@ -42,7 +44,7 @@ export default function KanbanScreen() {
       const title =
         (typeof raw.title === 'string' && raw.title) ||
         (typeof raw.poste === 'string' && raw.poste) ||
-        'Offre sans titre';
+        t('feed.untitled');
       const company =
         (typeof raw.company === 'string' && raw.company) ||
         (typeof raw.entreprise === 'string' && raw.entreprise) ||
@@ -61,7 +63,7 @@ export default function KanbanScreen() {
     <View style={{ flex: 1, backgroundColor: colors.background }}>
       <Stack.Screen
         options={{
-          title: 'Candidatures',
+          title: t('kanban.title'),
           headerShown: true,
           headerRight: () =>
             isRefreshing ? (
@@ -69,7 +71,7 @@ export default function KanbanScreen() {
             ) : (
               <TouchableOpacity
                 onPress={handleRefresh}
-                accessibilityLabel="Actualiser"
+                accessibilityLabel={t('common.retry')}
                 style={{
                   width: 34,
                   height: 34,
@@ -105,7 +107,7 @@ export default function KanbanScreen() {
           <Text
             style={[typography.bodySmall, { color: colors.textSecondary, marginTop: spacing.sm }]}
           >
-            Chargement du board…
+            {t('common.loading')}
           </Text>
         </View>
       ) : (
@@ -123,7 +125,7 @@ export default function KanbanScreen() {
       <TouchableOpacity
         onPress={() => router.push('/kanban/add-job')}
         accessibilityRole="button"
-        accessibilityLabel="Ajouter une offre"
+        accessibilityLabel={t('kanban.addManual')}
         style={{
           position: 'absolute',
           bottom: spacing.xl,

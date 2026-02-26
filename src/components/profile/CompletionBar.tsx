@@ -13,6 +13,7 @@
  */
 
 import { View, Text, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { ProgressBar } from '@/components/ui/ProgressBar';
 import type { Profile } from '@/types/api';
@@ -50,12 +51,15 @@ export function computeCompletion(profile: Profile | null): number {
 
 // ─── Messages contextuels ────────────────────────────────────────────────────
 
-function getCompletionMessage(pct: number): string | null {
+function getCompletionMessage(
+  pct: number,
+  t: (key: string, options?: Record<string, unknown>) => string,
+): string | null {
   if (pct >= 0.8) return null; // profil suffisamment complet, pas de message
-  if (pct === 0) return 'Commencez par renseigner votre nom et votre statut.';
-  if (pct < 0.3) return 'Votre profil est très incomplet. Ajoutez vos compétences et expériences.';
-  if (pct < 0.5) return 'Continuez ! Un profil complet augmente vos chances de matching.';
-  return 'Presque là ! Ajoutez votre CV ou vos certifications pour terminer.';
+  if (pct === 0) return t('profile.completion.msgStart');
+  if (pct < 0.3) return t('profile.completion.msgVeryIncomplete');
+  if (pct < 0.5) return t('profile.completion.msgContinue');
+  return t('profile.completion.msgAlmost');
 }
 
 // ─── Props ───────────────────────────────────────────────────────────────────
@@ -68,11 +72,12 @@ export interface CompletionBarProps {
 // ─── Composant ───────────────────────────────────────────────────────────────
 
 export function CompletionBar({ profile, style }: CompletionBarProps) {
+  const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
 
   const completion = computeCompletion(profile);
   const pct = Math.round(completion * 100);
-  const message = getCompletionMessage(completion);
+  const message = getCompletionMessage(completion, t);
 
   const barColor =
     completion >= 0.8 ? colors.success : completion >= 0.5 ? colors.warning : colors.danger;
@@ -91,7 +96,9 @@ export function CompletionBar({ profile, style }: CompletionBarProps) {
     >
       {/* En-tête */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
-        <Text style={[typography.label, { color: colors.textPrimary }]}>Complétion du profil</Text>
+        <Text style={[typography.label, { color: colors.textPrimary }]}>
+          {t('profile.completion.title')}
+        </Text>
         <Text style={[typography.label, { color: barColor, fontWeight: '700' }]}>{pct} %</Text>
       </View>
 

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Stack } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import {
   useFonts,
@@ -19,12 +20,10 @@ import { initI18n } from '../src/i18n';
 // ── Log module-level : confirme que le fichier est chargé par Metro ──────────
 console.log('[Layout] Module loaded ✓');
 
-// ── Dev only : vide tout le stockage local à chaque démarrage ────────────────
-if (__DEV__) {
-  void Promise.all([AsyncStorage.clear(), SecureStore.deleteItemAsync('auth_token')]).then(() =>
-    console.log('[DEV] Storage cleared on startup (AsyncStorage + SecureStore)'),
-  );
-}
+// ── Dev only : reset du stockage pour debug/tests ────────────────────────────
+// Activé par défaut en DEV. Pour désactiver: EXPO_PUBLIC_CLEAR_STORAGE_ON_START=0
+const CLEAR_STORAGE_ON_START =
+  __DEV__ && process.env.EXPO_PUBLIC_CLEAR_STORAGE_ON_START !== '0';
 
 // Empêcher le splash de se masquer automatiquement avant que tout soit prêt
 SplashScreen.preventAutoHideAsync().catch((e) =>
@@ -61,11 +60,29 @@ export default function RootLayout() {
     Inter_700Bold,
   });
   const [i18nReady, setI18nReady] = useState(false);
+  const [storageReady, setStorageReady] = useState(!CLEAR_STORAGE_ON_START);
+
+  useEffect(() => {
+    if (!CLEAR_STORAGE_ON_START) return;
+
+    console.log('[DEV] 🧹 Clearing local storage before app bootstrap...');
+    void Promise.all([AsyncStorage.clear(), SecureStore.deleteItemAsync('auth_token')])
+      .then(() => {
+        console.log('[DEV] ✅ Storage cleared (AsyncStorage + auth_token)');
+      })
+      .catch((err: unknown) => {
+        console.warn('[DEV] Storage clear failed:', err);
+      })
+      .finally(() => {
+        setStorageReady(true);
+      });
+  }, []);
 
   console.log('[Layout] Render —', { fontsLoaded, fontError: !!fontError, i18nReady });
 
   // Initialiser i18n (AsyncStorage → expo-localization → 'en')
   useEffect(() => {
+    if (!storageReady) return;
     console.log('[i18n] Initializing...');
     void initI18n()
       .then(() => {
@@ -76,26 +93,32 @@ export default function RootLayout() {
         console.warn('[i18n] Init error (ignored):', err);
         setI18nReady(true);
       });
-  }, []);
+  }, [storageReady]);
 
   const fontsReady = fontsLoaded || !!fontError;
+
+  if (!storageReady) {
+    return null;
+  }
 
   // Pas de garde return null — le splash natif couvre l'UI pendant le chargement.
   // SplashController le masque dès que fonts + i18n + auth sont prêts.
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <ThemeProvider>
-        <AuthProvider>
-          {/* SplashController a accès à useAuth() ici, à l'intérieur de AuthProvider */}
-          <SplashController fontsReady={fontsReady} i18nReady={i18nReady} />
-          <StatusBar style="auto" />
-          <Stack screenOptions={{ headerShown: false }}>
-            <Stack.Screen name="index" />
-            <Stack.Screen name="(auth)" />
-            <Stack.Screen name="(app)" />
-          </Stack>
-        </AuthProvider>
-      </ThemeProvider>
+      <SafeAreaProvider>
+        <ThemeProvider>
+          <AuthProvider>
+            {/* SplashController a accès à useAuth() ici, à l'intérieur de AuthProvider */}
+            <SplashController fontsReady={fontsReady} i18nReady={i18nReady} />
+            <StatusBar style="auto" />
+            <Stack screenOptions={{ headerShown: false }}>
+              <Stack.Screen name="index" />
+              <Stack.Screen name="(auth)" />
+              <Stack.Screen name="(app)" />
+            </Stack>
+          </AuthProvider>
+        </ThemeProvider>
+      </SafeAreaProvider>
     </GestureHandlerRootView>
   );
 }

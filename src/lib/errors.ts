@@ -5,48 +5,50 @@
  * lisibles adaptés à l'UX mobile.
  */
 
+import i18n from '@/i18n';
+
 // ─── Table de correspondance erreurs backend → messages FR ───────────────────
 
-const ERROR_MAP: Array<{ pattern: RegExp | string; message: string }> = [
+const ERROR_MAP: Array<{ pattern: RegExp | string; key: string }> = [
   // Auth
-  { pattern: /invalid credentials/i, message: 'Email ou mot de passe incorrect.' },
-  { pattern: /user not found/i, message: 'Aucun compte associé à cet email.' },
-  { pattern: /wrong password/i, message: 'Mot de passe incorrect.' },
+  { pattern: /invalid credentials/i, key: 'errors.invalidCredentials' },
+  { pattern: /user not found/i, key: 'errors.userNotFound' },
+  { pattern: /wrong password/i, key: 'errors.wrongPassword' },
   {
     pattern: /email already (taken|exists|used)/i,
-    message: 'Cette adresse e-mail est déjà utilisée.',
+    key: 'errors.emailAlreadyUsed',
   },
-  { pattern: /user already exists/i, message: 'Un compte existe déjà avec cet email.' },
-  { pattern: /account.*disabled/i, message: 'Ce compte a été désactivé. Contactez le support.' },
+  { pattern: /user already exists/i, key: 'errors.userAlreadyExists' },
+  { pattern: /account.*disabled/i, key: 'errors.accountDisabled' },
 
   // JWT / session
-  { pattern: /unauthorized/i, message: 'Session expirée. Veuillez vous reconnecter.' },
-  { pattern: /jwt.*expired/i, message: 'Session expirée. Veuillez vous reconnecter.' },
-  { pattern: /invalid token/i, message: 'Session invalide. Veuillez vous reconnecter.' },
-  { pattern: /forbidden/i, message: 'Accès refusé.' },
+  { pattern: /unauthorized/i, key: 'errors.sessionExpired' },
+  { pattern: /jwt.*expired/i, key: 'errors.sessionExpired' },
+  { pattern: /invalid token/i, key: 'errors.invalidSession' },
+  { pattern: /forbidden/i, key: 'errors.forbidden' },
 
   // Réseau / serveur
   {
     pattern: /network request failed/i,
-    message: 'Impossible de joindre le serveur. Vérifiez votre connexion.',
+    key: 'errors.network',
   },
   {
     pattern: /failed to fetch/i,
-    message: 'Impossible de joindre le serveur. Vérifiez votre connexion.',
+    key: 'errors.network',
   },
-  { pattern: /timeout/i, message: 'La requête a pris trop de temps. Réessayez.' },
-  { pattern: /HTTP 5\d\d/, message: 'Le serveur rencontre un problème. Réessayez plus tard.' },
-  { pattern: /HTTP 429/, message: 'Trop de tentatives. Attendez quelques secondes.' },
-  { pattern: /HTTP 4\d\d/, message: 'Requête invalide. Vérifiez vos informations.' },
+  { pattern: /timeout/i, key: 'errors.timeout' },
+  { pattern: /HTTP 5\d\d/, key: 'errors.http5xx' },
+  { pattern: /HTTP 429/, key: 'errors.http429' },
+  { pattern: /HTTP 4\d\d/, key: 'errors.http4xx' },
 
   // Validation
-  { pattern: /validation/i, message: 'Certains champs sont invalides. Vérifiez vos informations.' },
-  { pattern: /too short/i, message: 'Un champ est trop court.' },
-  { pattern: /too long/i, message: 'Un champ est trop long.' },
+  { pattern: /validation/i, key: 'errors.validation' },
+  { pattern: /too short/i, key: 'errors.tooShort' },
+  { pattern: /too long/i, key: 'errors.tooLong' },
 
   // Upload
-  { pattern: /file too large/i, message: 'Le fichier est trop volumineux (max 10 Mo).' },
-  { pattern: /invalid file type/i, message: 'Format de fichier non supporté. Utilisez un PDF.' },
+  { pattern: /file too large/i, key: 'errors.fileTooLarge' },
+  { pattern: /invalid file type/i, key: 'errors.invalidFileType' },
 ];
 
 // ─── Mapper public ────────────────────────────────────────────────────────────
@@ -62,16 +64,16 @@ const ERROR_MAP: Array<{ pattern: RegExp | string; message: string }> = [
 export function mapApiError(err: unknown): string {
   const raw = extractMessage(err);
 
-  for (const { pattern, message } of ERROR_MAP) {
+  for (const { pattern, key } of ERROR_MAP) {
     if (typeof pattern === 'string') {
-      if (raw.toLowerCase().includes(pattern.toLowerCase())) return message;
+      if (raw.toLowerCase().includes(pattern.toLowerCase())) return i18n.t(key);
     } else {
-      if (pattern.test(raw)) return message;
+      if (pattern.test(raw)) return i18n.t(key);
     }
   }
 
   // Fallback générique — ne jamais afficher le message technique brut
-  return 'Une erreur inattendue est survenue. Réessayez.';
+  return i18n.t('errors.unexpected');
 }
 
 // ─── Helper interne ───────────────────────────────────────────────────────────

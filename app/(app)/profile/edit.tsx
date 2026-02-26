@@ -14,6 +14,7 @@
 import { useState, useCallback } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Alert, ScrollView } from 'react-native';
 import { router, Stack } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useProfile } from '@/hooks/useProfile';
 import { useTheme } from '@/hooks/useTheme';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
@@ -26,12 +27,12 @@ import type { ProfileStatus } from '@/types/api';
 
 // ─── Statuts disponibles ────────────────────────────────────────────────────
 
-const STATUSES: { value: ProfileStatus; label: string }[] = [
-  { value: 'STUDENT', label: 'Étudiant' },
-  { value: 'JUNIOR', label: 'Junior' },
-  { value: 'MID', label: 'Confirmé' },
-  { value: 'SENIOR', label: 'Senior' },
-  { value: 'OPEN_TO_WORK', label: 'En recherche' },
+const STATUSES: { value: ProfileStatus; key: string }[] = [
+  { value: 'STUDENT', key: 'profile.edit.status.STUDENT' },
+  { value: 'JUNIOR', key: 'profile.edit.status.JUNIOR' },
+  { value: 'MID', key: 'profile.edit.status.MID' },
+  { value: 'SENIOR', key: 'profile.edit.status.SENIOR' },
+  { value: 'OPEN_TO_WORK', key: 'profile.edit.status.OPEN_TO_WORK' },
 ];
 
 // ─── Helpers ────────────────────────────────────────────────────────────────
@@ -48,6 +49,7 @@ function resolveSkillLabel(raw: unknown): string | null {
 // ─── Écran ───────────────────────────────────────────────────────────────────
 
 export default function EditProfileScreen() {
+  const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
   const { profile, isUpdating, updateProfile } = useProfile();
 
@@ -83,7 +85,7 @@ export default function EditProfileScreen() {
     setFieldError(null);
 
     if (!fullName.trim()) {
-      setFieldError('Le nom complet est requis.');
+      setFieldError(t('profile.edit.fullNameRequired'));
       return;
     }
 
@@ -96,9 +98,9 @@ export default function EditProfileScreen() {
       });
       router.replace('/(app)/profile');
     } catch {
-      Alert.alert('Erreur', 'Impossible de sauvegarder les modifications.');
+      Alert.alert(t('common.error'), t('profile.edit.saveError'));
     }
-  }, [fullName, status, skills, updateProfile]);
+  }, [fullName, status, skills, updateProfile, t]);
 
   return (
     <ScreenWrapper padded={false}>
@@ -106,8 +108,8 @@ export default function EditProfileScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: 'Modifier le profil',
-          headerBackTitle: 'Retour',
+          title: t('profile.editTitle'),
+          headerBackTitle: t('common.back'),
           headerRight: () => (
             <TouchableOpacity
               onPress={() => {
@@ -115,11 +117,11 @@ export default function EditProfileScreen() {
               }}
               disabled={isUpdating}
               accessibilityRole="button"
-              accessibilityLabel="Sauvegarder les modifications"
+              accessibilityLabel={t('common.save')}
               style={{ opacity: isUpdating ? 0.4 : 1, paddingHorizontal: spacing.sm }}
             >
               <Text style={[typography.label, { color: colors.primary, fontWeight: '700' }]}>
-                {isUpdating ? 'Envoi…' : 'Sauvegarder'}
+                {isUpdating ? t('common.loading') : t('common.save')}
               </Text>
             </TouchableOpacity>
           ),
@@ -133,7 +135,7 @@ export default function EditProfileScreen() {
       >
         {/* ── Nom complet ── */}
         <Input
-          label="Nom complet"
+          label={t('profile.edit.fullName')}
           value={fullName}
           onChangeText={setFullName}
           autoCapitalize="words"
@@ -147,11 +149,12 @@ export default function EditProfileScreen() {
 
         {/* ── Statut ── */}
         <Text style={[typography.label, { color: colors.textPrimary, marginBottom: spacing.sm }]}>
-          Statut
+          {t('profile.edit.statusTitle')}
         </Text>
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
-          {STATUSES.map(({ value, label }) => {
+          {STATUSES.map(({ value, key }) => {
             const selected = status === value;
+            const label = t(key);
             return (
               <TouchableOpacity
                 key={value}
@@ -190,7 +193,7 @@ export default function EditProfileScreen() {
 
         {/* ── Compétences ── */}
         <Text style={[typography.label, { color: colors.textPrimary, marginBottom: spacing.sm }]}>
-          Compétences
+          {t('profile.skills')}
         </Text>
 
         {/* Chips existantes */}
@@ -225,7 +228,7 @@ export default function EditProfileScreen() {
           <TextInput
             value={newSkill}
             onChangeText={setNewSkill}
-            placeholder="Ajouter une compétence…"
+            placeholder={t('profile.edit.addSkillPlaceholder')}
             placeholderTextColor={colors.textDisabled}
             returnKeyType="done"
             onSubmitEditing={handleAddSkill}
@@ -233,16 +236,16 @@ export default function EditProfileScreen() {
               typography.bodyMedium,
               { flex: 1, color: colors.textPrimary, paddingVertical: spacing.sm },
             ]}
-            accessibilityLabel="Nouvelle compétence"
+            accessibilityLabel={t('profile.edit.newSkill')}
           />
           <TouchableOpacity
             onPress={handleAddSkill}
             disabled={!newSkill.trim()}
             accessibilityRole="button"
-            accessibilityLabel="Ajouter la compétence"
+            accessibilityLabel={t('profile.addSkill')}
             style={{ opacity: newSkill.trim() ? 1 : 0.3 }}
           >
-            <Text style={[typography.label, { color: colors.primary }]}>Ajouter</Text>
+            <Text style={[typography.label, { color: colors.primary }]}>{t('profile.addSkill')}</Text>
           </TouchableOpacity>
         </View>
 
@@ -250,7 +253,7 @@ export default function EditProfileScreen() {
 
         {/* ── Bouton Sauvegarder (bas de page, alternative au header) ── */}
         <Button
-          label={isUpdating ? 'Sauvegarde…' : 'Sauvegarder'}
+          label={isUpdating ? t('common.loading') : t('common.save')}
           onPress={() => {
             void handleSave();
           }}

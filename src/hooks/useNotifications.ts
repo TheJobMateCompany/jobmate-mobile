@@ -14,21 +14,21 @@
 
 import { useEffect } from 'react';
 import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { router } from 'expo-router';
 import { useAuth } from '@/context/AuthContext';
 import { gqlRequest } from '@/lib/graphql/client';
 import { REGISTER_PUSH_TOKEN_MUTATION } from '@/lib/graphql/mutations';
 
 // ─── Handler foreground ────────────────────────────────────────────────────────
-// Afficher l'alerte même quand l'app est au premier plan
+// API récente expo-notifications:
+// `shouldShowAlert` est déprécié au profit de `shouldShowBanner` + `shouldShowList`.
 Notifications.setNotificationHandler({
   handleNotification: async () => ({
-    shouldShowAlert: true,
-    shouldPlaySound: true,
-    shouldSetBadge: true,
     shouldShowBanner: true,
     shouldShowList: true,
+    shouldPlaySound: true,
+    shouldSetBadge: true,
   }),
 });
 
@@ -36,16 +36,19 @@ Notifications.setNotificationHandler({
 
 export function useNotifications() {
   const { token } = useAuth();
+  const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
 
   // ── 1. Enregistrement push token ─────────────────────────────────────────
   useEffect(() => {
+    if (isExpoGo) return;
     if (!token) return;
     void registerForPushNotificationsAsync();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, [token, isExpoGo]);
 
   // ── 2. Navigation sur tap notification ───────────────────────────────────
   useEffect(() => {
+    if (isExpoGo) return;
     const sub = Notifications.addNotificationResponseReceivedListener((response) => {
       const data = response.notification.request.content.data as Record<string, string> | undefined;
       const type = data?.type;
@@ -72,7 +75,7 @@ export function useNotifications() {
       }
     });
     return () => sub.remove();
-  }, []);
+  }, [isExpoGo]);
 }
 
 // ─── Helpers (exportés pour kanban/[id].tsx) ──────────────────────────────────

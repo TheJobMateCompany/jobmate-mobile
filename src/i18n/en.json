@@ -23,7 +23,31 @@
     "copySuccess": "Copied to clipboard",
     "networkError": "No network connection",
     "offline": "Offline",
-    "offlineBanner": "You are offline — data may be outdated"
+    "offlineBanner": "You are offline — data may be outdated",
+    "justNow": "Just now"
+  },
+
+  "errors": {
+    "invalidCredentials": "Incorrect email or password.",
+    "userNotFound": "No account found for this email.",
+    "wrongPassword": "Incorrect password.",
+    "emailAlreadyUsed": "This email address is already used.",
+    "userAlreadyExists": "An account already exists with this email.",
+    "accountDisabled": "This account has been disabled. Contact support.",
+    "sessionExpired": "Session expired. Please sign in again.",
+    "invalidSession": "Invalid session. Please sign in again.",
+    "forbidden": "Access denied.",
+    "network": "Unable to reach the server. Check your connection.",
+    "timeout": "The request timed out. Please try again.",
+    "http5xx": "Server error. Please try again later.",
+    "http429": "Too many attempts. Please wait a few seconds.",
+    "http4xx": "Invalid request. Please check your input.",
+    "validation": "Some fields are invalid. Please check your input.",
+    "tooShort": "A field is too short.",
+    "tooLong": "A field is too long.",
+    "fileTooLarge": "File is too large (max 10 MB).",
+    "invalidFileType": "Unsupported file type. Please use a PDF.",
+    "unexpected": "An unexpected error occurred. Please try again."
   },
 
   "onboarding": {
@@ -72,7 +96,9 @@
   "feed": {
     "title": "Jobs",
     "empty": "No jobs yet",
+    "untitled": "Untitled job",
     "emptySubtitle": "Set up a search config in your profile to start receiving matches.",
+    "description": "Description",
     "score": "Score",
     "matchScore": "Match: {{score}}%",
     "approve": "Interested",
@@ -81,6 +107,7 @@
     "rejected": "Job skipped",
     "coverLetter": "Cover letter",
     "copyCoverLetter": "Copy letter",
+    "coverLetterPending": "The cover letter will be generated automatically after you approve this job.",
     "cvSuggestions": "CV suggestions",
     "pros": "Pros",
     "cons": "Cons",
@@ -106,13 +133,61 @@
 
   "kanban": {
     "title": "My applications",
+    "addManual": "Add a job",
+    "manualApplication": "Manual application",
+    "unknownJob": "Unknown job",
     "empty": "No applications yet",
     "emptySubtitle": "Approve jobs from the Feed to track them here.",
+    "jobDetails": "Job details",
+    "salaryFrom": "From",
+    "salaryUntil": "Up to",
+    "startDate": "Start date",
+    "duration": "Duration",
+    "aboutCompany": "About the company",
+    "whyJoin": "Why join us?",
+    "jobDescription": "Job description",
+    "aiPending": "AI analysis will be available after processing.",
+    "setReminder": "Set a reminder",
+    "editReminder": "Edit date",
+    "deleteTitle": "Delete application",
+    "deleteConfirm": "This application will be permanently deleted. This action cannot be undone.",
+    "deleteAction": "Delete application",
+    "addJob": {
+      "title": "Add a job",
+      "modeUrl": "Via URL",
+      "modeManual": "Manually",
+      "urlHelp": "Paste the job listing URL. We will automatically fetch the information.",
+      "urlLabel": "Job URL",
+      "manualHelp": "Fill in the job information manually.",
+      "companyLabel": "Company *",
+      "locationPlaceholder": "e.g. London, Berlin, Remote…",
+      "otherContract": "Other",
+      "customContract": "Specify contract type…",
+      "datePlaceholder": "DD/MM/YYYY",
+      "profileWanted": "Role / Description",
+      "profileWantedPlaceholder": "Job description, required skills…",
+      "whyUs": "Why this company? (optional)",
+      "whyUsPlaceholder": "What attracts me in this opportunity…",
+      "retrieved": "Job retrieved!",
+      "source": "Source",
+      "company": "Company",
+      "reviewHelp": "By approving this job, it will be added to your Kanban board and our AI will analyze it to provide a compatibility score and personalized advice.",
+      "createApplication": "Create my application",
+      "doNotApprove": "Do not approve",
+      "errors": {
+        "urlRequired": "Please paste the job URL.",
+        "invalidUrlTitle": "Invalid URL",
+        "invalidUrl": "URL must start with http:// or https://",
+        "companyRequired": "Company name is required."
+      }
+    },
     "status": {
+      "TO_APPLY": "To apply",
       "INTERESTED": "Interested",
       "APPLIED": "Applied",
       "INTERVIEW": "Interview",
       "OFFER": "Offer received",
+      "HIRED": "Hired 🎉",
       "REJECTED": "Rejected",
       "WITHDRAWN": "Withdrawn"
     },
@@ -142,6 +217,10 @@
     "experiences": "Experiences",
     "educations": "Education",
     "cv": "CV / Resume",
+    "cvNone": "No CV uploaded — accepted format: PDF, max 10 MB.",
+    "cvFileLabel": "CV file: {{fileName}}",
+    "uploadingFile": "Uploading file…",
+    "replaceCv": "Replace",
     "uploadCv": "Upload a CV (PDF)",
     "uploadCvProgress": "Uploading… {{progress}}%",
     "uploadCvSuccess": "CV uploaded successfully",
@@ -154,6 +233,13 @@
     "addEducation": "Add education",
     "addSkill": "Add skill",
     "present": "Present",
+    "completion": {
+      "title": "Profile completion",
+      "msgStart": "Start by filling in your name and status.",
+      "msgVeryIncomplete": "Your profile is very incomplete. Add your skills and experiences.",
+      "msgContinue": "Keep going! A complete profile improves your matching chances.",
+      "msgAlmost": "Almost there! Add your CV or certifications to finish."
+    },
     "searchConfigs": {
       "title": "Search configurations",
       "empty": "No configurations",
@@ -175,11 +261,34 @@
       "contractTypes": "Contract types",
       "coverLetterTemplate": "Cover letter template",
       "coverLetterPlaceholder": "Write a template that the AI will tailor to each listing…",
+      "remotePolicy": {
+        "REMOTE": "Fully remote",
+        "HYBRID": "Hybrid",
+        "ON_SITE": "On-site"
+      },
       "active": "Active search",
       "inactive": "Paused",
       "activate": "Activate",
       "deactivate": "Pause",
-      "deleteConfirm": "Delete this configuration?"
+      "deleteConfirm": "Delete this configuration?",
+      "deleteError": "Unable to delete this configuration.",
+      "createError": "Unable to create this configuration. Please try again.",
+      "updateError": "Unable to save this configuration."
+    },
+    "edit": {
+      "fullName": "Full name",
+      "fullNameRequired": "Full name is required.",
+      "saveError": "Unable to save changes.",
+      "statusTitle": "Status",
+      "newSkill": "New skill",
+      "addSkillPlaceholder": "Add a skill…",
+      "status": {
+        "STUDENT": "Student",
+        "JUNIOR": "Junior",
+        "MID": "Mid-level",
+        "SENIOR": "Senior",
+        "OPEN_TO_WORK": "Open to work"
+      }
     }
   },
 
@@ -208,11 +317,27 @@
     "account": "Account",
     "editProfile": "Edit profile",
     "notifications": "Notifications",
+    "notificationsDisabledTitle": "Notifications disabled",
+    "notificationsDisabledIos": "Enable notifications in Settings > JobMate > Notifications.",
+    "notificationsDisabledAndroid": "Enable notifications in Settings > Apps > JobMate.",
     "privacy": "Privacy",
     "about": "About",
     "version": "Version {{version}}",
+    "reviewTutorial": "Review tutorial",
+    "reviewTutorialConfirm": "You will be redirected to the onboarding screen on next launch.",
+    "hints": {
+      "notifications": "Enable or disable push notifications",
+      "editProfile": "Open profile editing screen",
+      "logout": "Log out from the app",
+      "deleteAccount": "Permanently delete your account and all your data",
+      "version": "Application version",
+      "reviewTutorial": "Reset onboarding so you can see it again on next launch"
+    },
     "logout": "Log out",
     "deleteAccount": "Delete my account",
-    "deleteAccountConfirm": "This action is irreversible. Are you sure you want to delete your account?"
+    "deleteAccountConfirm": "This action is irreversible. Are you sure you want to delete your account?",
+    "deleteAccountFinalTitle": "Final confirmation",
+    "deleteAccountFinalConfirm": "All your data will be permanently deleted.",
+    "deleteAccountFinalAction": "Delete permanently"
   }
 }

@@ -19,18 +19,19 @@
  */
 
 import { View, Text, type ViewStyle } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import type { ApplicationStatus } from '@/types/api';
 
 // ─── Maps ─────────────────────────────────────────────────────────────────────
 
-const STATUS_LABEL: Record<ApplicationStatus, string> = {
-  TO_APPLY: 'À postuler',
-  APPLIED: 'Postulé',
-  INTERVIEW: 'Entretien',
-  OFFER: 'Offre reçue',
-  HIRED: 'Embauché 🎉',
-  REJECTED: 'Rejeté',
+const STATUS_LABEL_KEY: Record<ApplicationStatus, string> = {
+  TO_APPLY: 'kanban.status.TO_APPLY',
+  APPLIED: 'kanban.status.APPLIED',
+  INTERVIEW: 'kanban.status.INTERVIEW',
+  OFFER: 'kanban.status.OFFER',
+  HIRED: 'kanban.status.HIRED',
+  REJECTED: 'kanban.status.REJECTED',
 };
 
 type ColorKey = 'primary' | 'success' | 'warning' | 'danger';
@@ -44,13 +45,13 @@ const STATUS_COLOR: Record<ApplicationStatus, ColorKey> = {
   REJECTED: 'danger',
 };
 
-const BG_OVERRIDE: Partial<Record<ApplicationStatus, string>> = {
-  INTERVIEW: '#EDE9FE', // primaryLight — distinction visuelle avec TO_APPLY
-  HIRED: '#D1FAE5',
+const BG_OVERRIDE: Partial<Record<ApplicationStatus, ColorKey>> = {
+  INTERVIEW: 'primary',
+  HIRED: 'success',
 };
 
-const FG_OVERRIDE: Partial<Record<ApplicationStatus, string>> = {
-  INTERVIEW: '#6D28D9', // violet — distinction de TO_APPLY
+const FG_OVERRIDE: Partial<Record<ApplicationStatus, ColorKey>> = {
+  INTERVIEW: 'primary',
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -63,6 +64,7 @@ export interface StatusBadgeProps {
 // ─── Composant ────────────────────────────────────────────────────────────────
 
 export function StatusBadge({ status, style }: StatusBadgeProps) {
+  const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
 
   const colorKey = STATUS_COLOR[status];
@@ -81,8 +83,9 @@ export function StatusBadge({ status, style }: StatusBadgeProps) {
     danger: colors.danger,
   };
 
-  const bg = BG_OVERRIDE[status] ?? bgMap[colorKey];
-  const fg = FG_OVERRIDE[status] ?? fgMap[colorKey];
+  const bg = bgMap[BG_OVERRIDE[status] ?? colorKey];
+  const fg = fgMap[FG_OVERRIDE[status] ?? colorKey];
+  const label = t(STATUS_LABEL_KEY[status]);
 
   return (
     <View
@@ -97,11 +100,9 @@ export function StatusBadge({ status, style }: StatusBadgeProps) {
         style,
       ]}
       accessibilityRole="text"
-      accessibilityLabel={STATUS_LABEL[status]}
+      accessibilityLabel={label}
     >
-      <Text style={[typography.caption, { color: fg, fontWeight: '600' }]}>
-        {STATUS_LABEL[status]}
-      </Text>
+      <Text style={[typography.caption, { color: fg, fontWeight: '600' }]}>{label}</Text>
     </View>
   );
 }

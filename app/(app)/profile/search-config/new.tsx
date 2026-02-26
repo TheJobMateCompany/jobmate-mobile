@@ -9,6 +9,7 @@
 import { useCallback } from 'react';
 import { Alert, ScrollView } from 'react-native';
 import { router, Stack } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { useSearchConfigs } from '@/hooks/useSearchConfigs';
 import { useTheme } from '@/hooks/useTheme';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
@@ -17,6 +18,7 @@ import type { CreateSearchConfigInput } from '@/types/api';
 
 export default function NewSearchConfigScreen() {
   const { spacing } = useTheme();
+  const { t } = useTranslation();
   const { isSubmitting, createConfig } = useSearchConfigs();
 
   const handleSubmit = useCallback(
@@ -25,17 +27,17 @@ export default function NewSearchConfigScreen() {
         await createConfig(input);
         router.back();
       } catch {
-        Alert.alert('Erreur', 'Impossible de créer la configuration. Réessayez.');
+        Alert.alert(t('common.error'), t('profile.searchConfigs.createError'));
       }
     },
-    [createConfig],
+    [createConfig, t],
   );
 
   return (
     <ScreenWrapper padded={false}>
       <Stack.Screen
         options={{
-          title: 'Nouvelle configuration',
+          title: t('profile.searchConfigs.newTitle'),
         }}
       />
       <ScrollView
@@ -46,7 +48,7 @@ export default function NewSearchConfigScreen() {
         <SearchConfigForm
           onSubmit={handleSubmit}
           isLoading={isSubmitting}
-          submitLabel="Créer la configuration"
+          submitLabel={t('profile.searchConfigs.add')}
         />
       </ScrollView>
     </ScreenWrapper>

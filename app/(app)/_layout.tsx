@@ -3,6 +3,8 @@ import { View, ActivityIndicator } from 'react-native';
 import { Tabs, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import * as Notifications from 'expo-notifications';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../../src/context/AuthContext';
 import { useTheme } from '../../src/hooks/useTheme';
 import { useSSE } from '../../src/hooks/useSSE';
@@ -19,20 +21,21 @@ import { OfflineBanner } from '../../src/components/ui/OfflineBanner';
 function SSEBannerBridge() {
   const { subscribe } = useSSE();
   const { showBanner } = useNotificationBanner();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const unsubJobDiscovered = subscribe('JOB_DISCOVERED', () => {
       showBanner({
-        title: 'Nouvelle offre 🔔',
-        body: 'Une offre correspond à votre profil',
+        title: t('notifications.newJob', { title: '…', company: '…' }),
+        body: t('notifications.permissionSubtitle'),
         action: () => router.push('/(app)/feed' as never),
       });
     });
     const unsubAnalysisDone = subscribe('ANALYSIS_DONE', (data) => {
       const d = data as { matchScore?: number; applicationId?: string } | undefined;
       showBanner({
-        title: 'Analyse IA terminée ✅',
-        body: d?.matchScore != null ? `Score : ${d.matchScore}/100` : 'Consultant les résultats',
+        title: '🤖',
+        body: d?.matchScore != null ? t('feed.matchScore', { score: d.matchScore }) : t('common.loading'),
         action: d?.applicationId
           ? () => router.push(`/(app)/kanban/${d.applicationId}` as never)
           : () => router.push('/(app)/kanban' as never),
@@ -40,16 +43,16 @@ function SSEBannerBridge() {
     });
     const unsubCvParsed = subscribe('CV_PARSED', () => {
       showBanner({
-        title: 'CV analysé 📄',
-        body: 'Votre profil a été mis à jour',
+        title: t('notifications.cvParsed'),
+        body: t('notifications.cvParsedBody'),
         action: () => router.push('/(app)/profile' as never),
       });
     });
     const unsubCardMoved = subscribe('CARD_MOVED', (data) => {
       const d = data as { to?: string; applicationId?: string } | undefined;
       showBanner({
-        title: 'Candidature mise à jour 📋',
-        body: d?.to ? `Nouveau statut : ${d.to}` : 'Statut mis à jour',
+        title: t('kanban.title'),
+        body: d?.to ? t('kanban.movedTo', { status: d.to }) : t('common.loading'),
         action: d?.applicationId
           ? () => router.push(`/(app)/kanban/${d.applicationId}` as never)
           : undefined,
@@ -71,6 +74,7 @@ function SSEBannerBridge() {
 function AppContent() {
   const { token, isLoading } = useAuth();
   const { colors } = useTheme();
+  const { t } = useTranslation();
   const { subscribe } = useSSE();
   const [pendingBadge, setPendingBadge] = useState<number | undefined>(undefined);
 
@@ -130,7 +134,7 @@ function AppContent() {
       <Tabs.Screen
         name="feed"
         options={{
-          title: 'Feed',
+          title: t('feed.title'),
           tabBarBadge: pendingBadge || undefined,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'newspaper' : 'newspaper-outline'} size={22} color={color} />
@@ -146,7 +150,7 @@ function AppContent() {
       <Tabs.Screen
         name="kanban"
         options={{
-          title: 'Candidatures',
+          title: t('kanban.title'),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'albums' : 'albums-outline'} size={22} color={color} />
           ),
@@ -155,7 +159,7 @@ function AppContent() {
       <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profil',
+          title: t('profile.title'),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'person-circle' : 'person-circle-outline'}
@@ -168,7 +172,7 @@ function AppContent() {
       <Tabs.Screen
         name="settings"
         options={{
-          title: 'Paramètres',
+          title: t('settings.title'),
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'settings' : 'settings-outline'} size={22} color={color} />
           ),
@@ -179,6 +183,12 @@ function AppContent() {
 }
 
 export default function AppLayout() {
+  const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+  if (isExpoGo) {
+    return <AppContent />;
+  }
+
   return (
     <NotificationBannerProvider>
       <SSEBannerBridge />

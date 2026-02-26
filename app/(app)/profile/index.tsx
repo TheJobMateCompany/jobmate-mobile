@@ -16,6 +16,7 @@
 import { useState, useCallback } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { router, Stack } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
 import { useProfile } from '@/hooks/useProfile';
 import { useUploadCV } from '@/hooks/useUploadCV';
@@ -29,6 +30,7 @@ import { CompletionBar } from '@/components/profile/CompletionBar';
 import { SkillChip } from '@/components/profile/SkillChip';
 import { ExperienceItem, parseExperienceEntry } from '@/components/profile/ExperienceItem';
 import { CvUploadCard } from '@/components/profile/CvUploadCard';
+import { useTranslation } from 'react-i18next';
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -58,13 +60,21 @@ function SectionTitle({ label }: { label: string }) {
 // ─── Écran ─────────────────────────────────────────────────────────────────────
 
 export default function ProfileScreen() {
+  const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
   const { profile, isLoading, fetchProfile } = useProfile();
-  const { configs } = useSearchConfigs();
+  const { configs, fetchConfigs } = useSearchConfigs();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
 
   const activeCount = configs.filter((c) => c.isActive).length;
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchProfile();
+      void fetchConfigs();
+    }, [fetchProfile, fetchConfigs]),
+  );
 
   // ── useUploadCV : écoute CV_PARSED pour désactiver l'état « analyse » ─────
   const { isUploading, progress, pickAndUpload } = useUploadCV({
@@ -77,9 +87,12 @@ export default function ProfileScreen() {
   // ── Pull-to-refresh ────────────────────────────────────────────────────────
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
-    await fetchProfile();
-    setIsRefreshing(false);
-  }, [fetchProfile]);
+    try {
+      await Promise.all([fetchProfile(), fetchConfigs()]);
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [fetchProfile, fetchConfigs]);
 
   // ── Upload CV ──────────────────────────────────────────────────────────────
   const handleUpload = useCallback(async () => {
@@ -89,9 +102,9 @@ export default function ProfileScreen() {
         setIsAnalyzing(true); // upload OK → attente SSE CV_PARSED
       }
     } catch {
-      Alert.alert('Erreur', "Impossible d'envoyer le CV. Réessayez.");
+      Alert.alert(t('common.error'), t('profile.uploadCvError'));
     }
-  }, [pickAndUpload]);
+  }, [pickAndUpload, t]);
 
   // ── Données dérivées ───────────────────────────────────────────────────────
   const skills = (profile?.skills ?? [])
@@ -107,16 +120,16 @@ export default function ProfileScreen() {
       <Stack.Screen
         options={{
           headerShown: true,
-          title: 'Mon profil',
+          title: t('profile.title'),
           headerRight: () => (
             <TouchableOpacity
               onPress={() => router.push('/(app)/profile/edit')}
               accessibilityRole="button"
-              accessibilityLabel="Modifier le profil"
+              accessibilityLabel={t('settings.editProfile')}
               style={{ paddingHorizontal: spacing.sm }}
             >
               <Text style={[typography.label, { color: colors.primary, fontWeight: '600' }]}>
-                Modifier
+                {t('common.edit')}
               </Text>
             </TouchableOpacity>
           ),
@@ -166,7 +179,7 @@ export default function ProfileScreen() {
                 <Spacer size={spacing.md} />
                 <Divider />
                 <Spacer size={spacing.md} />
-                <SectionTitle label="Compétences" />
+                <SectionTitle label={t('profile.skills')} />
                 <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
                   {skills.map((skill) => (
                     <SkillChip key={skill} label={skill} />
@@ -181,7 +194,7 @@ export default function ProfileScreen() {
                 <Spacer size={spacing.md} />
                 <Divider />
                 <Spacer size={spacing.md} />
-                <SectionTitle label="Expériences" />
+                <SectionTitle label={t('profile.experiences')} />
                 {experiences.map((entry, idx) => (
                   <ExperienceItem
                     key={`${entry.company}-${idx}`}
@@ -196,7 +209,7 @@ export default function ProfileScreen() {
             <Spacer size={spacing.md} />
             <Divider />
             <Spacer size={spacing.md} />
-            <SectionTitle label="Curriculum Vitae" />
+            <SectionTitle label={t('profile.cv')} />
             <CvUploadCard
               cvUrl={profile?.cvUrl ?? null}
               isUploading={isUploading}
@@ -213,7 +226,7 @@ export default function ProfileScreen() {
             <TouchableOpacity
               onPress={() => router.push('/(app)/profile/search-config')}
               accessibilityRole="button"
-              accessibilityLabel="Voir les configurations de recherche"
+              accessibilityLabel={t('profile.searchConfigs.title')}
               activeOpacity={0.7}
               style={{
                 flexDirection: 'row',
@@ -223,12 +236,12 @@ export default function ProfileScreen() {
             >
               <View style={{ flex: 1 }}>
                 <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-                  Configurations de recherche
+                  {t('profile.searchConfigs.title')}
                 </Text>
                 <Text style={[typography.caption, { color: colors.textSecondary, marginTop: 2 }]}>
                   {activeCount > 0
                     ? `${activeCount} configuration${activeCount > 1 ? 's' : ''} active${activeCount > 1 ? 's' : ''}`
-                    : 'Aucune configuration — appuyez pour en créer une'}
+                    : t('profile.searchConfigs.emptySubtitle')}
                 </Text>
               </View>
               {activeCount > 0 && (

@@ -15,6 +15,7 @@
  */
 
 import { View, Text, FlatList, type ListRenderItem } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useTheme } from '@/hooks/useTheme';
 import { KanbanCard } from './KanbanCard';
 import { StatusBadge } from './StatusBadge';
@@ -25,14 +26,13 @@ import type { Application, ApplicationStatus } from '@/types/api';
 /** Largeur d'une colonne — exportée pour que KanbanBoard calcule le contentSize */
 export const COLUMN_WIDTH = 280;
 
-/** Labels FR des colonnes */
-const COLUMN_LABEL: Record<ApplicationStatus, string> = {
-  TO_APPLY: 'À postuler',
-  APPLIED: 'Postulé',
-  INTERVIEW: 'Entretien',
-  OFFER: 'Offre reçue',
-  HIRED: 'Embauché',
-  REJECTED: 'Rejeté',
+const COLUMN_LABEL_KEY: Record<ApplicationStatus, string> = {
+  TO_APPLY: 'kanban.status.TO_APPLY',
+  APPLIED: 'kanban.status.APPLIED',
+  INTERVIEW: 'kanban.status.INTERVIEW',
+  OFFER: 'kanban.status.OFFER',
+  HIRED: 'kanban.status.HIRED',
+  REJECTED: 'kanban.status.REJECTED',
 };
 
 // ─── Props ────────────────────────────────────────────────────────────────────
@@ -55,6 +55,7 @@ export function KanbanColumn({
   resolveJob,
   onCardPress,
 }: KanbanColumnProps) {
+  const { t } = useTranslation();
   const { colors, spacing, radius, typography } = useTheme();
 
   const renderItem: ListRenderItem<Application> = ({ item }) => {
@@ -92,7 +93,7 @@ export function KanbanColumn({
         }}
       >
         <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-          {COLUMN_LABEL[status]}
+          {t(COLUMN_LABEL_KEY[status])}
         </Text>
         <View
           style={{
@@ -126,7 +127,7 @@ export function KanbanColumn({
             }}
           >
             <Text style={[typography.caption, { color: colors.textDisabled, textAlign: 'center' }]}>
-              Aucune candidature
+              {t('kanban.empty')}
             </Text>
           </View>
         }

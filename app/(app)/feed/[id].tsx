@@ -23,6 +23,7 @@ import { useTheme } from '@/hooks/useTheme';
 import { AnalysisBadge } from '@/components/feed/AnalysisBadge';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { useTranslation } from 'react-i18next';
 
 // ─── Helpers rawData ──────────────────────────────────────────────────────────
 
@@ -37,6 +38,7 @@ function str(rawData: Record<string, unknown>, ...keys: string[]): string | null
 // ─── Écran ────────────────────────────────────────────────────────────────────
 
 export default function FeedDetailScreen() {
+  const { t } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, spacing, radius, typography } = useTheme();
   const { jobs, isLoading, isSubmitting, fetchFeed, approveJob, rejectJob } = useJobFeed();
@@ -53,7 +55,7 @@ export default function FeedDetailScreen() {
   const job = jobs.find((j) => j.id === id);
   const raw = job?.rawData ?? {};
 
-  const title = str(raw, 'title', 'poste') ?? 'Offre sans titre';
+  const title = str(raw, 'title', 'poste') ?? t('feed.untitled');
   const company = str(raw, 'company', 'entreprise');
   const location = str(raw, 'location', 'lieu');
   const remotePolicy = str(raw, 'remotePolicy', 'remote_policy');
@@ -112,7 +114,7 @@ export default function FeedDetailScreen() {
           backgroundColor: colors.background,
         }}
       >
-        <Stack.Screen options={{ title: 'Offre', headerShown: true }} />
+        <Stack.Screen options={{ title: t('feed.title'), headerShown: true }} />
         <ActivityIndicator color={colors.primary} />
       </View>
     );
@@ -129,12 +131,12 @@ export default function FeedDetailScreen() {
           padding: spacing.xl,
         }}
       >
-        <Stack.Screen options={{ title: 'Offre introuvable', headerShown: true }} />
+        <Stack.Screen options={{ title: t('common.noResults'), headerShown: true }} />
         <Text style={[typography.bodyMedium, { color: colors.textSecondary, textAlign: 'center' }]}>
-          Cette offre n'est plus disponible.
+          {t('feed.emptySubtitle')}
         </Text>
         <Button
-          label="Retour"
+          label={t('common.back')}
           onPress={() => router.back()}
           variant="ghost"
           style={{ marginTop: spacing.md }}
@@ -161,11 +163,11 @@ export default function FeedDetailScreen() {
                 <TouchableOpacity
                   onPress={() => void handleReject()}
                   disabled={actionLoading || isSubmitting}
-                  accessibilityLabel="Rejeter cette offre"
+                  accessibilityLabel={t('feed.reject')}
                   style={{ marginLeft: 4, paddingHorizontal: spacing.sm }}
                 >
                   <Text style={[typography.label, { color: colors.danger }]}>
-                    {actionLoading ? '…' : 'Rejeter'}
+                    {actionLoading ? '…' : t('feed.reject')}
                   </Text>
                 </TouchableOpacity>
               )
@@ -175,11 +177,11 @@ export default function FeedDetailScreen() {
                 <TouchableOpacity
                   onPress={() => void handleApprove()}
                   disabled={actionLoading || isSubmitting}
-                  accessibilityLabel="Approuver cette offre"
+                  accessibilityLabel={t('feed.approve')}
                   style={{ marginRight: 4, paddingHorizontal: spacing.sm }}
                 >
                   <Text style={[typography.label, { color: colors.success }]}>
-                    {actionLoading ? '…' : 'Approuver'}
+                    {actionLoading ? '…' : t('feed.approve')}
                   </Text>
                 </TouchableOpacity>
               )
@@ -216,10 +218,10 @@ export default function FeedDetailScreen() {
             <Badge
               label={
                 job.status === 'PENDING'
-                  ? 'À traiter'
+                  ? t('feed.filter.pending')
                   : job.status === 'APPROVED'
-                    ? 'Approuvé'
-                    : 'Rejeté'
+                    ? t('feed.filter.approved')
+                    : t('feed.filter.rejected')
               }
               variant={
                 job.status === 'PENDING'
@@ -248,7 +250,7 @@ export default function FeedDetailScreen() {
             }}
           >
             <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-              Description
+              {t('feed.description')}
             </Text>
             <Text style={[typography.bodyMedium, { color: colors.textSecondary, lineHeight: 22 }]}>
               {displayedDesc}
@@ -259,7 +261,7 @@ export default function FeedDetailScreen() {
                 accessibilityRole="button"
               >
                 <Text style={[typography.label, { color: colors.primary }]}>
-                  {descExpanded ? 'Réduire ▲' : 'Lire la suite ▼'}
+                  {descExpanded ? t('common.seeLess') : t('common.seeMore')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -271,7 +273,7 @@ export default function FeedDetailScreen() {
           <TouchableOpacity
             onPress={() => void Linking.openURL(sourceUrl)}
             accessibilityRole="link"
-            accessibilityLabel="Ouvrir l'offre originale"
+            accessibilityLabel={t('feed.viewSource')}
             style={{
               flexDirection: 'row',
               alignItems: 'center',
@@ -286,7 +288,7 @@ export default function FeedDetailScreen() {
             <Text style={[typography.label, { color: colors.primary, flex: 1 }]} numberOfLines={1}>
               🔗 {sourceUrl}
             </Text>
-            <Text style={[typography.caption, { color: colors.textDisabled }]}>Ouvrir ↗</Text>
+            <Text style={[typography.caption, { color: colors.textDisabled }]}>↗ {t('feed.viewSource')}</Text>
           </TouchableOpacity>
         ) : null}
 
@@ -305,14 +307,14 @@ export default function FeedDetailScreen() {
             style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}
           >
             <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-              Lettre de motivation
+              {t('feed.coverLetter')}
             </Text>
             {coverLetter && (
               <TouchableOpacity onPress={() => void handleCopyLetter()} accessibilityRole="button">
                 <Text
                   style={[typography.label, { color: copied ? colors.success : colors.primary }]}
                 >
-                  {copied ? 'Copié ✓' : 'Copier'}
+                  {copied ? `${t('common.copySuccess')} ✓` : t('feed.copyCoverLetter')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -326,8 +328,7 @@ export default function FeedDetailScreen() {
             <Text
               style={[typography.bodySmall, { color: colors.textDisabled, fontStyle: 'italic' }]}
             >
-              La lettre de motivation sera générée automatiquement après approbation de l'offre
-              (Phase 5 — Candidatures).
+              {t('feed.coverLetterPending')}
             </Text>
           )}
         </View>
@@ -336,7 +337,7 @@ export default function FeedDetailScreen() {
         {isPending && (
           <View style={{ flexDirection: 'row', gap: spacing.md }}>
             <Button
-              label="Rejeter"
+              label={t('feed.reject')}
               onPress={() => void handleReject()}
               variant="danger"
               loading={actionLoading}
@@ -344,7 +345,7 @@ export default function FeedDetailScreen() {
               style={{ flex: 1 }}
             />
             <Button
-              label="Approuver"
+              label={t('feed.approve')}
               onPress={() => void handleApprove()}
               variant="primary"
               loading={actionLoading}

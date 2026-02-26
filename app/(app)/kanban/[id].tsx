@@ -31,6 +31,7 @@ import { useApplications } from '@/hooks/useApplications';
 import { useJobFeed } from '@/hooks/useJobFeed';
 import { useTheme } from '@/hooks/useTheme';
 import { scheduleRelanceReminder, cancelRelanceReminder } from '@/hooks/useNotifications';
+import { useTranslation } from 'react-i18next';
 import { StatusBadge } from '@/components/kanban/StatusBadge';
 import { RatingStars } from '@/components/kanban/RatingStars';
 import { ScoreRing } from '@/components/feed/ScoreRing';
@@ -48,13 +49,13 @@ const ALL_STATUSES: ApplicationStatus[] = [
   'REJECTED',
 ];
 
-const STATUS_LABEL_FR: Record<ApplicationStatus, string> = {
-  TO_APPLY: 'À postuler',
-  APPLIED: 'Postulé',
-  INTERVIEW: 'Entretien',
-  OFFER: 'Offre reçue',
-  HIRED: 'Embauché 🎉',
-  REJECTED: 'Rejeté',
+const STATUS_LABEL_KEY: Record<ApplicationStatus, string> = {
+  TO_APPLY: 'kanban.status.TO_APPLY',
+  APPLIED: 'kanban.status.APPLIED',
+  INTERVIEW: 'kanban.status.INTERVIEW',
+  OFFER: 'kanban.status.OFFER',
+  HIRED: 'kanban.status.HIRED',
+  REJECTED: 'kanban.status.REJECTED',
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -73,6 +74,7 @@ function formatDate(iso: string): string {
 
 function TimelineItem({ transition, isLast }: { transition: StatusTransition; isLast: boolean }) {
   const { colors, spacing, typography, radius } = useTheme();
+  const { t } = useTranslation();
   return (
     <View style={{ flexDirection: 'row', gap: spacing.sm }}>
       {/* Trait vertical + point */}
@@ -93,7 +95,7 @@ function TimelineItem({ transition, isLast }: { transition: StatusTransition; is
       {/* Contenu */}
       <View style={{ flex: 1, paddingBottom: spacing.md }}>
         <Text style={[typography.bodySmall, { color: colors.textPrimary, fontWeight: '600' }]}>
-          {STATUS_LABEL_FR[transition.from]} → {STATUS_LABEL_FR[transition.to]}
+          {t(STATUS_LABEL_KEY[transition.from])} → {t(STATUS_LABEL_KEY[transition.to])}
         </Text>
         <Text style={[typography.caption, { color: colors.textDisabled }]}>
           {formatDate(transition.at)}
@@ -106,6 +108,7 @@ function TimelineItem({ transition, isLast }: { transition: StatusTransition; is
 // ─── Écran principal ──────────────────────────────────────────────────────────
 
 export default function KanbanDetailScreen() {
+  const { t, i18n } = useTranslation();
   const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, spacing, radius, typography } = useTheme();
 
@@ -157,7 +160,7 @@ export default function KanbanDetailScreen() {
   // Résolution job depuis jobsMap
   const jobMeta = useMemo(() => {
     const empty = {
-      title: 'Candidature manuelle',
+      title: t('kanban.manualApplication'),
       company: null as string | null,
       location: null as string | null,
       description: null as string | null,
@@ -169,15 +172,15 @@ export default function KanbanDetailScreen() {
       whyUs: null as string | null,
       companyDescription: null as string | null,
     };
-    if (!application?.jobFeedId) return empty;
+    if (!application?.jobFeedId) return { ...empty, title: t('kanban.manualApplication') };
     const job = jobs.find((j) => j.id === application.jobFeedId);
-    if (!job) return { ...empty, title: 'Offre inconnue' };
+    if (!job) return { ...empty, title: t('kanban.unknownJob') };
     const raw = job.rawData;
     return {
       title:
         (typeof raw.title === 'string' && raw.title) ||
         (typeof raw.poste === 'string' && raw.poste) ||
-        'Offre sans titre',
+        t('feed.untitled'),
       company:
         (typeof raw.company_name === 'string' && raw.company_name) ||
         (typeof raw.company === 'string' && raw.company) ||
@@ -197,7 +200,7 @@ export default function KanbanDetailScreen() {
       companyDescription:
         typeof raw.company_description === 'string' ? raw.company_description : null,
     };
-  }, [application, jobs]);
+  }, [application, jobs, t]);
 
   // Vrai si au moins un champ de détail est disponible (évite la carte vide pendant le chargement)
   const hasJobDetails = !!(
@@ -242,12 +245,12 @@ export default function KanbanDetailScreen() {
   const handleDelete = useCallback(() => {
     if (!application) return;
     Alert.alert(
-      'Supprimer la candidature',
-      'Cette candidature sera définitivement supprimée. Cette action est irréversible.',
+      t('kanban.deleteTitle'),
+      t('kanban.deleteConfirm'),
       [
-        { text: 'Annuler', style: 'cancel' },
+        { text: t('common.cancel'), style: 'cancel' },
         {
-          text: 'Supprimer',
+          text: t('common.delete'),
           style: 'destructive',
           onPress: async () => {
             const ok = await deleteApplication(application.id);
@@ -256,7 +259,7 @@ export default function KanbanDetailScreen() {
         },
       ],
     );
-  }, [application, deleteApplication]);
+  }, [application, deleteApplication, t]);
 
   const handleDateChange = useCallback(
     async (_event: unknown, selectedDate?: Date) => {
@@ -300,7 +303,7 @@ export default function KanbanDetailScreen() {
           backgroundColor: colors.background,
         }}
       >
-        <Stack.Screen options={{ title: 'Candidature', headerShown: true }} />
+        <Stack.Screen options={{ title: t('kanban.title'), headerShown: true }} />
         <ActivityIndicator color={colors.primary} />
       </View>
     );
@@ -317,12 +320,12 @@ export default function KanbanDetailScreen() {
           padding: spacing.xl,
         }}
       >
-        <Stack.Screen options={{ title: 'Introuvable', headerShown: true }} />
+        <Stack.Screen options={{ title: t('common.noResults'), headerShown: true }} />
         <Text style={[typography.bodyMedium, { color: colors.textSecondary, textAlign: 'center' }]}>
-          Cette candidature n'est plus disponible.
+          {t('kanban.emptySubtitle')}
         </Text>
         <Button
-          label="Retour"
+          label={t('common.back')}
           onPress={() => router.back()}
           variant="ghost"
           style={{ marginTop: spacing.md }}
@@ -355,7 +358,7 @@ export default function KanbanDetailScreen() {
           )}
           <StatusBadge status={application.currentStatus} />
           <Text style={[typography.caption, { color: colors.textDisabled }]}>
-            Créée le {formatDate(application.createdAt)}
+            {t('kanban.addedAt', { date: formatDate(application.createdAt) })}
           </Text>
         </View>
 
@@ -372,7 +375,7 @@ export default function KanbanDetailScreen() {
             }}
           >
             <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-              Détails de l'offre
+              {t('kanban.jobDetails')}
             </Text>
 
             {/* Entreprise */}
@@ -403,8 +406,8 @@ export default function KanbanDetailScreen() {
                   {jobMeta.salaryMin !== null && jobMeta.salaryMax !== null
                     ? `${Math.round(jobMeta.salaryMin).toLocaleString('fr-FR')} – ${Math.round(jobMeta.salaryMax).toLocaleString('fr-FR')} €/an`
                     : jobMeta.salaryMin !== null
-                      ? `Dès ${Math.round(jobMeta.salaryMin).toLocaleString('fr-FR')} €/an`
-                      : `Jusqu'à ${Math.round(jobMeta.salaryMax!).toLocaleString('fr-FR')} €/an`}
+                      ? `${t('kanban.salaryFrom')} ${Math.round(jobMeta.salaryMin).toLocaleString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')} €/an`
+                      : `${t('kanban.salaryUntil')} ${Math.round(jobMeta.salaryMax!).toLocaleString(i18n.language === 'fr' ? 'fr-FR' : 'en-US')} €/an`}
                 </Text>
               </View>
             )}
@@ -414,7 +417,7 @@ export default function KanbanDetailScreen() {
               <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' }}>
                 <Text style={{ fontSize: 15 }}>📅</Text>
                 <Text style={[typography.bodyMedium, { color: colors.textSecondary, flex: 1 }]}>
-                  Début : {jobMeta.startDate}
+                  {t('kanban.startDate')}: {jobMeta.startDate}
                 </Text>
               </View>
             )}
@@ -424,7 +427,7 @@ export default function KanbanDetailScreen() {
               <View style={{ flexDirection: 'row', gap: spacing.sm, alignItems: 'flex-start' }}>
                 <Text style={{ fontSize: 15 }}>⏱️</Text>
                 <Text style={[typography.bodyMedium, { color: colors.textSecondary, flex: 1 }]}>
-                  Durée : {jobMeta.duration}
+                  {t('kanban.duration')}: {jobMeta.duration}
                 </Text>
               </View>
             )}
@@ -433,7 +436,7 @@ export default function KanbanDetailScreen() {
             {jobMeta.companyDescription && (
               <View style={{ gap: 4 }}>
                 <Text style={[typography.label, { color: colors.textPrimary }]}>
-                  À propos de l'entreprise
+                  {t('kanban.aboutCompany')}
                 </Text>
                 <Text
                   style={[typography.bodySmall, { color: colors.textSecondary, lineHeight: 20 }]}
@@ -447,7 +450,7 @@ export default function KanbanDetailScreen() {
             {jobMeta.whyUs && (
               <View style={{ gap: 4 }}>
                 <Text style={[typography.label, { color: colors.textPrimary }]}>
-                  Pourquoi nous rejoindre ?
+                  {t('kanban.whyJoin')}
                 </Text>
                 <Text
                   style={[typography.bodySmall, { color: colors.textSecondary, lineHeight: 20 }]}
@@ -461,7 +464,7 @@ export default function KanbanDetailScreen() {
             {jobMeta.description && (
               <View style={{ gap: 4 }}>
                 <Text style={[typography.label, { color: colors.textPrimary }]}>
-                  Description du poste
+                  {t('kanban.jobDescription')}
                 </Text>
                 <Text
                   style={[typography.bodySmall, { color: colors.textSecondary, lineHeight: 20 }]}
@@ -476,7 +479,7 @@ export default function KanbanDetailScreen() {
               <TouchableOpacity
                 onPress={() => void Linking.openURL(jobMeta.sourceUrl!)}
                 accessibilityRole="link"
-                accessibilityLabel="Voir l'offre originale"
+                accessibilityLabel={t('feed.viewSource')}
               >
                 <Text
                   style={[
@@ -484,7 +487,7 @@ export default function KanbanDetailScreen() {
                     { color: colors.primary, textDecorationLine: 'underline' },
                   ]}
                 >
-                  🔗 Voir l'offre originale
+                  🔗 {t('feed.viewSource')}
                 </Text>
               </TouchableOpacity>
             )}
@@ -493,7 +496,7 @@ export default function KanbanDetailScreen() {
 
         {/* ── Bouton Déplacer ───────────────────────────────────────────────── */}
         <Button
-          label={isSubmitting ? 'Déplacement…' : '↔ Déplacer le statut'}
+          label={isSubmitting ? t('common.loading') : `↔ ${t('kanban.moveCard')}`}
           onPress={() => setShowMoveModal(true)}
           variant="secondary"
           loading={isSubmitting}
@@ -513,7 +516,7 @@ export default function KanbanDetailScreen() {
             }}
           >
             <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-              Analyse IA
+              {t('kanban.aiAnalysis')}
             </Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: spacing.lg }}>
               {ai.score !== undefined && <ScoreRing score={ai.score} size={72} strokeWidth={7} />}
@@ -521,7 +524,7 @@ export default function KanbanDetailScreen() {
                 {ai.pros && ai.pros.length > 0 && (
                   <View style={{ gap: 4 }}>
                     <Text style={[typography.label, { color: colors.success }]}>
-                      ✓ Points forts
+                      ✓ {t('feed.pros')}
                     </Text>
                     {ai.pros.map((p, i) => (
                       <Text key={i} style={[typography.bodySmall, { color: colors.textSecondary }]}>
@@ -533,7 +536,7 @@ export default function KanbanDetailScreen() {
                 {ai.cons && ai.cons.length > 0 && (
                   <View style={{ gap: 4 }}>
                     <Text style={[typography.label, { color: colors.danger }]}>
-                      ✗ Points faibles
+                      ✗ {t('feed.cons')}
                     </Text>
                     {ai.cons.map((c, i) => (
                       <Text key={i} style={[typography.bodySmall, { color: colors.textSecondary }]}>
@@ -546,7 +549,9 @@ export default function KanbanDetailScreen() {
             </View>
             {ai.suggested_cv_content && (
               <View style={{ gap: 4 }}>
-                <Text style={[typography.label, { color: colors.primary }]}>💡 Suggestion CV</Text>
+                <Text style={[typography.label, { color: colors.primary }]}>
+                  💡 {t('feed.cvSuggestions')}
+                </Text>
                 <Text
                   style={[typography.bodySmall, { color: colors.textSecondary, lineHeight: 20 }]}
                 >
@@ -567,7 +572,7 @@ export default function KanbanDetailScreen() {
             <Text
               style={[typography.bodySmall, { color: colors.textDisabled, fontStyle: 'italic' }]}
             >
-              ⏳ L'analyse IA sera disponible après traitement.
+              ⏳ {t('kanban.aiPending')}
             </Text>
           </View>
         )}
@@ -585,7 +590,7 @@ export default function KanbanDetailScreen() {
             }}
           >
             <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-              Historique
+              {t('kanban.history')}
             </Text>
             {application.historyLog.map((t, i) => (
               <TimelineItem
@@ -608,12 +613,12 @@ export default function KanbanDetailScreen() {
             gap: spacing.sm,
           }}
         >
-          <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>Notes</Text>
+          <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>{t('kanban.notes')}</Text>
           <TextInput
             value={noteText}
             onChangeText={setNoteText}
             onBlur={() => void handleNoteBlur()}
-            placeholder="Ajoutez vos notes, contacts, impressions…"
+            placeholder={t('kanban.notesPlaceholder')}
             placeholderTextColor={colors.textDisabled}
             multiline
             numberOfLines={5}
@@ -644,7 +649,7 @@ export default function KanbanDetailScreen() {
           }}
         >
           <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-            Mon évaluation
+            {t('kanban.rating')}
           </Text>
           <RatingStars
             value={application.userRating}
@@ -665,24 +670,24 @@ export default function KanbanDetailScreen() {
           }}
         >
           <Text style={[typography.headingMedium, { color: colors.textPrimary }]}>
-            Rappel de relance
+            {t('kanban.reminder')}
           </Text>
 
           {application.relanceReminderAt && (
             <Text style={[typography.bodySmall, { color: colors.textSecondary }]}>
-              Prévu le : {formatDate(application.relanceReminderAt)}
+              {t('kanban.reminderSet', { date: formatDate(application.relanceReminderAt) })}
             </Text>
           )}
 
           <Button
-            label={application.relanceReminderAt ? 'Modifier la date' : 'Définir un rappel'}
+            label={application.relanceReminderAt ? t('kanban.editReminder') : t('kanban.setReminder')}
             onPress={() => setShowDatePicker(true)}
             variant="ghost"
           />
 
           {application.relanceReminderAt && (
             <Button
-              label="Effacer le rappel"
+              label={t('kanban.reminderRemove')}
               onPress={async () => {
                 await cancelRelanceReminder(application.id);
               }}
@@ -734,11 +739,13 @@ export default function KanbanDetailScreen() {
                   >
                     <TouchableOpacity onPress={() => setShowDatePicker(false)}>
                       <Text style={[typography.label, { color: colors.textSecondary }]}>
-                        Annuler
+                        {t('common.cancel')}
                       </Text>
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => void handleConfirmIOSDate()}>
-                      <Text style={[typography.label, { color: colors.primary }]}>Confirmer</Text>
+                      <Text style={[typography.label, { color: colors.primary }]}>
+                        {t('common.confirm')}
+                      </Text>
                     </TouchableOpacity>
                   </View>
                   <DateTimePicker
@@ -747,7 +754,7 @@ export default function KanbanDetailScreen() {
                     display="spinner"
                     minimumDate={new Date()}
                     onChange={(_e, d) => d && setPickerDate(d)}
-                    locale="fr-FR"
+                    locale={i18n.language === 'fr' ? 'fr-FR' : 'en-US'}
                   />
                 </View>
               </View>
@@ -767,7 +774,7 @@ export default function KanbanDetailScreen() {
           borderTopColor: colors.border,
         }}
       >
-        <Button label="Supprimer la candidature" onPress={handleDelete} variant="danger" />
+        <Button label={t('kanban.deleteAction')} onPress={handleDelete} variant="danger" />
       </View>
 
       {/* ── Modal "Déplacer" ──────────────────────────────────────────────── */}
@@ -798,7 +805,7 @@ export default function KanbanDetailScreen() {
               { color: colors.textPrimary, marginBottom: spacing.sm },
             ]}
           >
-            Déplacer vers…
+            {t('kanban.moveCard')}
           </Text>
           {ALL_STATUSES.filter((s) => s !== application.currentStatus).map((status) => (
             <TouchableOpacity
@@ -817,13 +824,13 @@ export default function KanbanDetailScreen() {
             >
               <StatusBadge status={status} />
               <Text style={[typography.bodyMedium, { color: colors.textPrimary, flex: 1 }]}>
-                {STATUS_LABEL_FR[status]}
+                {t(STATUS_LABEL_KEY[status])}
               </Text>
               <Text style={{ color: colors.textDisabled }}>›</Text>
             </TouchableOpacity>
           ))}
           <Button
-            label="Annuler"
+            label={t('common.cancel')}
             onPress={() => setShowMoveModal(false)}
             variant="ghost"
             style={{ marginTop: spacing.sm }}

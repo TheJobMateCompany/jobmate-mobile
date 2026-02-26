@@ -20,6 +20,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { router, Stack } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
+import { useTranslation } from 'react-i18next';
 import { useSearchConfigs } from '@/hooks/useSearchConfigs';
 import { useTheme } from '@/hooks/useTheme';
 import { ScreenWrapper } from '@/components/ui/ScreenWrapper';
@@ -30,10 +32,10 @@ import type { BadgeVariant } from '@/components/ui/Badge';
 
 // ─── RemotePolicy mappings ─────────────────────────────────────────────────────────
 
-const REMOTE_LABEL: Record<RemotePolicy, string> = {
-  REMOTE: 'Full remote',
-  HYBRID: 'Hybride',
-  ON_SITE: 'Présentiel',
+const REMOTE_LABEL_KEY: Record<RemotePolicy, string> = {
+  REMOTE: 'profile.searchConfigs.remotePolicy.REMOTE',
+  HYBRID: 'profile.searchConfigs.remotePolicy.HYBRID',
+  ON_SITE: 'profile.searchConfigs.remotePolicy.ON_SITE',
 };
 
 const REMOTE_VARIANT: Record<RemotePolicy, BadgeVariant> = {
@@ -54,6 +56,7 @@ function ConfigCard({
   onDelete: () => void;
 }) {
   const { colors, spacing, radius, typography } = useTheme();
+  const { t } = useTranslation();
 
   const salaryRange =
     config.salaryMin != null && config.salaryMax != null
@@ -87,7 +90,7 @@ function ConfigCard({
           onPress={onDelete}
           hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
           accessibilityRole="button"
-          accessibilityLabel="Supprimer la configuration"
+          accessibilityLabel={t('common.delete')}
         >
           <Text style={[typography.label, { color: colors.danger }]}>✕</Text>
         </TouchableOpacity>
@@ -98,10 +101,10 @@ function ConfigCard({
       {/* Badges */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm }}>
         <Badge
-          label={REMOTE_LABEL[config.remotePolicy]}
+          label={t(REMOTE_LABEL_KEY[config.remotePolicy])}
           variant={REMOTE_VARIANT[config.remotePolicy]}
         />
-        {config.isActive && <Badge label="Active" variant="primary" />}
+        {config.isActive && <Badge label={t('profile.searchConfigs.active')} variant="primary" />}
         {config.locations.length > 0 && (
           <Badge label={config.locations.slice(0, 2).join(', ')} variant="neutral" />
         )}
@@ -126,21 +129,28 @@ function ConfigCard({
 
 export default function SearchConfigListScreen() {
   const { colors, spacing, radius, typography } = useTheme();
+  const { t } = useTranslation();
   const { configs, isLoading, isSubmitting, fetchConfigs, deleteConfig } = useSearchConfigs();
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchConfigs();
+    }, [fetchConfigs]),
+  );
 
   const handleDelete = useCallback(
     (config: SearchConfig) => {
       Alert.alert(
-        'Supprimer la configuration ?',
-        `« ${config.jobTitles.slice(0, 2).join(', ')} » sera supprimée définitivement.`,
+        t('profile.searchConfigs.deleteConfirm'),
+        `« ${config.jobTitles.slice(0, 2).join(', ')} »`,
         [
-          { text: 'Annuler', style: 'cancel' },
+          { text: t('common.cancel'), style: 'cancel' },
           {
-            text: 'Supprimer',
+            text: t('common.delete'),
             style: 'destructive',
             onPress: () => {
               void deleteConfig(config.id).catch(() =>
-                Alert.alert('Erreur', 'Impossible de supprimer cette configuration.'),
+                Alert.alert(t('common.error'), t('profile.searchConfigs.deleteError')),
               );
             },
           },
@@ -154,7 +164,7 @@ export default function SearchConfigListScreen() {
     <ScreenWrapper padded={false}>
       <Stack.Screen
         options={{
-          title: 'Configurations',
+          title: t('profile.searchConfigs.title'),
           headerRight: () =>
             isSubmitting ? <ActivityIndicator size="small" color={colors.primary} /> : null,
         }}
@@ -201,7 +211,7 @@ export default function SearchConfigListScreen() {
                   { color: colors.textSecondary, textAlign: 'center' },
                 ]}
               >
-                Aucune configuration
+                {t('profile.searchConfigs.empty')}
               </Text>
               <Spacer size={spacing.sm} />
               <Text
@@ -210,7 +220,7 @@ export default function SearchConfigListScreen() {
                   { color: colors.textSecondary, textAlign: 'center' },
                 ]}
               >
-                Créez une configuration pour que l'IA recherche des offres adaptées.
+                {t('profile.searchConfigs.emptySubtitle')}
               </Text>
               <Spacer size={spacing.lg} />
               <TouchableOpacity
@@ -224,7 +234,7 @@ export default function SearchConfigListScreen() {
                 }}
               >
                 <Text style={[typography.label, { color: '#fff', fontWeight: '600' }]}>
-                  Créer une configuration
+                  {t('profile.searchConfigs.add')}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -236,7 +246,7 @@ export default function SearchConfigListScreen() {
       <TouchableOpacity
         onPress={() => router.push('/(app)/profile/search-config/new')}
         accessibilityRole="button"
-        accessibilityLabel="Créer une nouvelle configuration"
+        accessibilityLabel={t('profile.searchConfigs.add')}
         style={{
           position: 'absolute',
           bottom: spacing.xl,

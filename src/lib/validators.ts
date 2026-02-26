@@ -2,6 +2,8 @@
  * Fonctions de validation locale — sans dépendances externes
  */
 
+import i18n from '@/i18n';
+
 // ─── Email ────────────────────────────────────────────────────────────────────
 
 export function isValidEmail(email: string): boolean {
@@ -18,9 +20,9 @@ export interface PasswordValidation {
 export function validatePassword(password: string): PasswordValidation {
   const errors: string[] = [];
 
-  if (password.length < 8) errors.push('Minimum 8 caractères');
-  if (!/[A-Z]/.test(password)) errors.push('Au moins une majuscule');
-  if (!/[0-9]/.test(password)) errors.push('Au moins un chiffre');
+  if (password.length < 8) errors.push(i18n.t('auth.errors.passwordTooShort'));
+  if (!/[A-Z]/.test(password)) errors.push(i18n.t('auth.errors.passwordNeedsUppercase'));
+  if (!/[0-9]/.test(password)) errors.push(i18n.t('auth.errors.passwordNeedsNumber'));
 
   return { isValid: errors.length === 0, errors };
 }
