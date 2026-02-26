@@ -189,10 +189,7 @@ export default function KanbanDetailScreen() {
         null,
       salaryMin: typeof raw.salary_min === 'number' ? raw.salary_min : null,
       salaryMax: typeof raw.salary_max === 'number' ? raw.salary_max : null,
-      sourceUrl:
-        (typeof raw.source_url === 'string' && raw.source_url) ||
-        job.sourceUrl ||
-        null,
+      sourceUrl: (typeof raw.source_url === 'string' && raw.source_url) || job.sourceUrl || null,
       startDate: typeof raw.start_date === 'string' ? raw.start_date : null,
       duration: typeof raw.duration === 'string' ? raw.duration : null,
       whyUs: typeof raw.why_us === 'string' ? raw.why_us : null,
@@ -406,7 +403,9 @@ export default function KanbanDetailScreen() {
             {/* Description de l'entreprise (offres manuelles) */}
             {jobMeta.companyDescription && (
               <View style={{ gap: 4 }}>
-                <Text style={[typography.label, { color: colors.textPrimary }]}>À propos de l'entreprise</Text>
+                <Text style={[typography.label, { color: colors.textPrimary }]}>
+                  À propos de l'entreprise
+                </Text>
                 <Text
                   style={[typography.bodySmall, { color: colors.textSecondary, lineHeight: 20 }]}
                 >
@@ -418,7 +417,9 @@ export default function KanbanDetailScreen() {
             {/* Pourquoi nous rejoindre (offres manuelles) */}
             {jobMeta.whyUs && (
               <View style={{ gap: 4 }}>
-                <Text style={[typography.label, { color: colors.textPrimary }]}>Pourquoi nous rejoindre ?</Text>
+                <Text style={[typography.label, { color: colors.textPrimary }]}>
+                  Pourquoi nous rejoindre ?
+                </Text>
                 <Text
                   style={[typography.bodySmall, { color: colors.textSecondary, lineHeight: 20 }]}
                 >
@@ -430,7 +431,9 @@ export default function KanbanDetailScreen() {
             {/* Description du poste */}
             {jobMeta.description && (
               <View style={{ gap: 4 }}>
-                <Text style={[typography.label, { color: colors.textPrimary }]}>Description du poste</Text>
+                <Text style={[typography.label, { color: colors.textPrimary }]}>
+                  Description du poste
+                </Text>
                 <Text
                   style={[typography.bodySmall, { color: colors.textSecondary, lineHeight: 20 }]}
                 >
@@ -447,7 +450,10 @@ export default function KanbanDetailScreen() {
                 accessibilityLabel="Voir l'offre originale"
               >
                 <Text
-                  style={[typography.bodySmall, { color: colors.primary, textDecorationLine: 'underline' }]}
+                  style={[
+                    typography.bodySmall,
+                    { color: colors.primary, textDecorationLine: 'underline' },
+                  ]}
                 >
                   🔗 Voir l'offre originale
                 </Text>
