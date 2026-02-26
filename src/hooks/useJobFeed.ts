@@ -25,6 +25,7 @@
  */
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { setBadgeCountAsync } from 'expo-notifications';
 import { useAuth } from '@/context/AuthContext';
 import { useSSE } from './useSSE';
 import { gqlRequest } from '@/lib/graphql/client';
@@ -132,6 +133,9 @@ export function useJobFeed(): UseJobFeedReturn {
           status ? { status } : undefined,
         );
         setJobs(data.jobFeed);
+        // Badge icône app : nombre d'offres PENDING non traitées
+        const pendingCount = data.jobFeed.filter((j) => j.status === 'PENDING').length;
+        void setBadgeCountAsync(pendingCount).catch(() => {});
       } catch (err) {
         setError(mapApiError(err));
       } finally {

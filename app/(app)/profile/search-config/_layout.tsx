@@ -15,7 +15,7 @@ export default function SearchConfigLayout() {
         headerBackTitle: 'Retour',
       }}
     >
-      <Stack.Screen name="index" />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="new" />
       <Stack.Screen name="[id]" options={{ title: 'Configuration' }} />
     </Stack>

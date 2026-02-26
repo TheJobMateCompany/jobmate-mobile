@@ -30,6 +30,7 @@ import * as Haptics from 'expo-haptics';
 import { useApplications } from '@/hooks/useApplications';
 import { useJobFeed } from '@/hooks/useJobFeed';
 import { useTheme } from '@/hooks/useTheme';
+import { scheduleRelanceReminder, cancelRelanceReminder } from '@/hooks/useNotifications';
 import { StatusBadge } from '@/components/kanban/StatusBadge';
 import { RatingStars } from '@/components/kanban/RatingStars';
 import { ScoreRing } from '@/components/feed/ScoreRing';
@@ -263,15 +264,29 @@ export default function KanbanDetailScreen() {
       if (!selectedDate || !application) return;
       setPickerDate(selectedDate);
       await setRelanceReminder(application.id, selectedDate);
+      // Programmer un rappel local au moment choisi
+      await scheduleRelanceReminder(
+        application.id,
+        selectedDate,
+        jobMeta.title,
+        jobMeta.company ?? undefined,
+      );
     },
-    [application, setRelanceReminder],
+    [application, setRelanceReminder, jobMeta],
   );
 
   const handleConfirmIOSDate = useCallback(async () => {
     setShowDatePicker(false);
     if (!application) return;
     await setRelanceReminder(application.id, pickerDate);
-  }, [application, pickerDate, setRelanceReminder]);
+    // Programmer un rappel local au moment choisi
+    await scheduleRelanceReminder(
+      application.id,
+      pickerDate,
+      jobMeta.title,
+      jobMeta.company ?? undefined,
+    );
+  }, [application, pickerDate, setRelanceReminder, jobMeta]);
 
   // ─── États ──────────────────────────────────────────────────────────────────
 
@@ -664,6 +679,16 @@ export default function KanbanDetailScreen() {
             onPress={() => setShowDatePicker(true)}
             variant="ghost"
           />
+
+          {application.relanceReminderAt && (
+            <Button
+              label="Effacer le rappel"
+              onPress={async () => {
+                await cancelRelanceReminder(application.id);
+              }}
+              variant="ghost"
+            />
+          )}
 
           {/* Android : DateTimePicker inline */}
           {showDatePicker && Platform.OS === 'android' && (

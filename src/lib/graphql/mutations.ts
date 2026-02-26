@@ -210,3 +210,11 @@ export const DELETE_APPLICATION_MUTATION = /* GraphQL */ `
     deleteApplication(applicationId: $applicationId)
   }
 `;
+
+// ─── Notifications (Phase 6) ───────────────────────────────────────────────────
+
+export const REGISTER_PUSH_TOKEN_MUTATION = /* GraphQL */ `
+  mutation RegisterPushToken($token: String!) {
+    registerPushToken(token: $token)
+  }
+`;

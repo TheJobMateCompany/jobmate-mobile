@@ -16,7 +16,10 @@ export default function ProfileLayout() {
     >
       <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="edit" />
-      <Stack.Screen name="search-config" options={{ headerShown: false }} />
+      <Stack.Screen
+        name="search-config"
+        options={{ title: 'Configurations', headerBackTitle: 'Profil' }}
+      />
     </Stack>
   );
 }

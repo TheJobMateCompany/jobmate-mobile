@@ -155,16 +155,6 @@ export default function SearchConfigListScreen() {
       <Stack.Screen
         options={{
           title: 'Configurations',
-          headerLeft: () => (
-            <TouchableOpacity
-              onPress={() => router.back()}
-              accessibilityLabel="Retour au profil"
-              hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-              style={{ marginLeft: -4 }}
-            >
-              <Text style={{ color: colors.primary, fontSize: 17 }}>‹ Profil</Text>
-            </TouchableOpacity>
-          ),
           headerRight: () =>
             isSubmitting ? <ActivityIndicator size="small" color={colors.primary} /> : null,
         }}

@@ -154,7 +154,20 @@ export function SwipeRow({
 
       {/* Carte principale */}
       <GestureDetector gesture={pan}>
-        <Animated.View style={cardStyle}>{children}</Animated.View>
+        <Animated.View
+          style={cardStyle}
+          accessible
+          accessibilityActions={[
+            { name: 'approve', label: 'Valider cette offre' },
+            { name: 'reject', label: 'Rejeter cette offre' },
+          ]}
+          onAccessibilityAction={(event) => {
+            if (event.nativeEvent.actionName === 'approve' && onApprove) onApprove();
+            if (event.nativeEvent.actionName === 'reject' && onReject) onReject();
+          }}
+        >
+          {children}
+        </Animated.View>
       </GestureDetector>
     </View>
   );
