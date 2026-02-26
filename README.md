@@ -137,3 +137,4 @@ npx eslint . --ext .ts,.tsx --max-warnings=0
 - `src/context/` : providers globaux
 - `src/lib/` : utilitaires (graphql, storage, validators, errors)
 - `__tests__/` : tests unitaires
+
