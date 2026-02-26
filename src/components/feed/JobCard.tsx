@@ -40,8 +40,17 @@ function parseRawData(rawData: Record<string, unknown>): ParsedJobData {
   };
 }
 
-function formatRelativeDate(iso: string, language: string, justNowLabel: string): string {
-  const diff = Date.now() - new Date(iso).getTime();
+function formatRelativeDate(
+  iso: string | null | undefined,
+  language: string,
+  justNowLabel: string
+): string {
+  if (!iso) return justNowLabel;
+
+  const timestamp = new Date(iso).getTime();
+  if (!Number.isFinite(timestamp)) return justNowLabel;
+
+  const diff = Math.max(0, Date.now() - timestamp);
   const minutes = Math.floor(diff / 60_000);
   if (minutes < 1) return justNowLabel;
 
