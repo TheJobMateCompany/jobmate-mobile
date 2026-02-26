@@ -43,7 +43,7 @@ function parseRawData(rawData: Record<string, unknown>): ParsedJobData {
 function formatRelativeDate(
   iso: string | null | undefined,
   language: string,
-  justNowLabel: string
+  justNowLabel: string,
 ): string {
   if (!iso) return justNowLabel;
 
