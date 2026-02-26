@@ -21,6 +21,7 @@ import {
   type ListRenderItem,
 } from 'react-native';
 import { Stack, router } from 'expo-router';
+import { useFocusEffect } from '@react-navigation/native';
 import Constants, { ExecutionEnvironment } from 'expo-constants';
 import { useTranslation } from 'react-i18next';
 import { useJobFeed } from '@/hooks/useJobFeed';
@@ -56,6 +57,12 @@ export default function FeedScreen() {
     void fetchFeed(activeStatus);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeStatus]);
+
+  useFocusEffect(
+    useCallback(() => {
+      void fetchFeed(activeStatus);
+    }, [fetchFeed, activeStatus]),
+  );
 
   const handleFilterChange = (status: JobStatus) => {
     if (status !== activeStatus) setActiveStatus(status);

@@ -21,6 +21,7 @@ import {
   CREATE_SEARCH_CONFIG_MUTATION,
   UPDATE_SEARCH_CONFIG_MUTATION,
   DELETE_SEARCH_CONFIG_MUTATION,
+  TRIGGER_SCAN_MUTATION,
 } from '@/lib/graphql/mutations';
 import { mapApiError } from '@/lib/errors';
 import {
@@ -45,6 +46,10 @@ interface UpdateSearchConfigResponse {
 
 interface DeleteSearchConfigResponse {
   deleteSearchConfig: boolean;
+}
+
+interface TriggerScanResponse {
+  triggerScan: { message: string };
 }
 
 // ─── Interface du hook ────────────────────────────────────────────────────────
@@ -106,6 +111,11 @@ export function useSearchConfigs(): UseSearchConfigsReturn {
         const created = data.createSearchConfig;
         // Prepend car la plus récente est la plus pertinente
         setConfigs((prev) => [created, ...prev]);
+
+        // Lance immédiatement un scan discovery pour éviter un feed vide
+        // juste après la création d'une configuration.
+        void gqlRequest<TriggerScanResponse>(TRIGGER_SCAN_MUTATION).catch(() => {});
+
         return created;
       } catch (err) {
         setError(mapApiError(err));

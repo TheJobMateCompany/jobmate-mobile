@@ -148,6 +148,14 @@ export const ADD_JOB_MANUALLY_MUTATION = /* GraphQL */ `
   }
 `;
 
+export const TRIGGER_SCAN_MUTATION = /* GraphQL */ `
+  mutation TriggerScan {
+    triggerScan {
+      message
+    }
+  }
+`;
+
 // ─── Application (Kanban) ──────────────────────────────────────────────────────
 
 export const MOVE_CARD_MUTATION = /* GraphQL */ `
