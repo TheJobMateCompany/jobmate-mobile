@@ -1,0 +1,72 @@
+name: Mobile EAS Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: "Target platform"
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - android
+          - ios
+      profile:
+        description: "EAS profile"
+        required: true
+        default: preview
+        type: choice
+        options:
+          - preview
+          - production
+  push:
+    tags:
+      - "mobile-v*"
+
+jobs:
+  eas-build:
+    name: EAS Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Setup Expo and EAS
+        uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Determine build params
+        id: build-params
+        shell: bash
+        run: |
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "platform=${{ inputs.platform }}" >> "$GITHUB_OUTPUT"
+            echo "profile=${{ inputs.profile }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "platform=all" >> "$GITHUB_OUTPUT"
+            echo "profile=production" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Start EAS build
+        run: |
+          npx eas-cli build \
+            --platform "${{ steps.build-params.outputs.platform }}" \
+            --profile "${{ steps.build-params.outputs.profile }}" \
+            --non-interactive \
+            --no-wait
