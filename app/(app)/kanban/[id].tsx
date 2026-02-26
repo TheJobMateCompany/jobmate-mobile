@@ -198,6 +198,20 @@ export default function KanbanDetailScreen() {
     };
   }, [application, jobs]);
 
+  // Vrai si au moins un champ de détail est disponible (évite la carte vide pendant le chargement)
+  const hasJobDetails = !!(
+    jobMeta.company ||
+    jobMeta.location ||
+    jobMeta.description ||
+    jobMeta.salaryMin !== null ||
+    jobMeta.salaryMax !== null ||
+    jobMeta.sourceUrl ||
+    jobMeta.startDate ||
+    jobMeta.duration ||
+    jobMeta.whyUs ||
+    jobMeta.companyDescription
+  );
+
   // ─── Handlers ───────────────────────────────────────────────────────────────
 
   const handleNoteBlur = useCallback(async () => {
@@ -236,7 +250,7 @@ export default function KanbanDetailScreen() {
           style: 'destructive',
           onPress: async () => {
             const ok = await deleteApplication(application.id);
-            if (ok) router.replace('/(app)/kanban');
+            if (ok) router.back();
           },
         },
       ],
@@ -331,7 +345,7 @@ export default function KanbanDetailScreen() {
         </View>
 
         {/* ── Détails de l'offre ────────────────────────────────────────────── */}
-        {application.jobFeedId && (
+        {application.jobFeedId && hasJobDetails && (
           <View
             style={{
               backgroundColor: colors.surface,

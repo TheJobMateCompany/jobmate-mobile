@@ -9,9 +9,9 @@
  * - Résolution titre/entreprise via jobsMap construit depuis useJobFeed
  */
 
-import { useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { View, Text, TouchableOpacity, ActivityIndicator } from 'react-native';
-import { Stack, router } from 'expo-router';
+import { Stack, router, useFocusEffect } from 'expo-router';
 import { useApplications } from '@/hooks/useApplications';
 import { useJobFeed } from '@/hooks/useJobFeed';
 import { useTheme } from '@/hooks/useTheme';
@@ -26,11 +26,13 @@ export default function KanbanScreen() {
   // Charge les jobs approuvés pour résoudre titre/entreprise dans les cards
   const { jobs, fetchFeed } = useJobFeed();
 
-  useEffect(() => {
-    void fetchApplications();
-    void fetchFeed(); // tous statuts pour avoir le rawData
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  // Recharge automatiquement à chaque retour sur cet écran (ex: après suppression d'une candidature)
+  useFocusEffect(
+    useCallback(() => {
+      void fetchApplications();
+      void fetchFeed();
+    }, [fetchApplications, fetchFeed]),
+  );
 
   // jobsMap : jobFeedId → {title, company}
   const jobsMap = useMemo<Record<string, JobMeta>>(() => {
