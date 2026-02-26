@@ -85,7 +85,12 @@ export default function ProfileScreen() {
   );
 
   // ── useUploadCV : écoute CV_PARSED pour désactiver l'état « analyse » ─────
-  const { cvUrl: uploadedCvUrl, isUploading, progress, pickAndUpload } = useUploadCV({
+  const {
+    cvUrl: uploadedCvUrl,
+    isUploading,
+    progress,
+    pickAndUpload,
+  } = useUploadCV({
     onParsed: useCallback(() => {
       clearAnalyzingTimeout();
       setIsAnalyzing(false);
