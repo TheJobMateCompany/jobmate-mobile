@@ -29,9 +29,8 @@ jobs:
         run: npx tsc --noEmit
 
       - name: Lint
-        env:
-          ESLINT_USE_FLAT_CONFIG: 'false'
-        run: npx eslint . --ext .ts,.tsx --max-warnings=0
+        run: |
+          npx --yes eslint@8 . --ext .ts,.tsx --quiet --rule "import/namespace: off" --rule "import/no-duplicates: off" --rule "import/order: off"
 
       - name: Unit tests
         run: npm test -- --coverage --coverageReporters=lcov

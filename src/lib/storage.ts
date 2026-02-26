@@ -26,7 +26,7 @@ export async function saveToken(token: string): Promise<void> {
 }
 
 export async function getToken(): Promise<string | null> {
-  return SecureStore.getItemAsync(STORAGE_KEYS.AUTH_TOKEN);
+  return await SecureStore.getItemAsync(STORAGE_KEYS.AUTH_TOKEN);
 }
 
 export async function deleteToken(): Promise<void> {
@@ -40,7 +40,7 @@ export async function savePreference(key: string, value: string): Promise<void> 
 }
 
 export async function getPreference(key: string): Promise<string | null> {
-  return AsyncStorage.getItem(key);
+  return await AsyncStorage.getItem(key);
 }
 
 export async function deletePreference(key: string): Promise<void> {

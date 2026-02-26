@@ -22,7 +22,7 @@ interface GQLResponse<T> {
 async function getToken(): Promise<string | null> {
   // Importé dynamiquement pour éviter les dépendances circulaires
   const secureStore = await import('expo-secure-store');
-  return secureStore.getItemAsync('auth_token');
+  return await secureStore.getItemAsync('auth_token');
 }
 
 // ─── Client principal ─────────────────────────────────────────────────────────
