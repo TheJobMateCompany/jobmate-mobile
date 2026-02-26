@@ -13,7 +13,7 @@
  * Souscription SSE CV_PARSED intégrée via useUploadCV(onParsed).
  */
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { ScrollView, View, Text, TouchableOpacity, RefreshControl, Alert } from 'react-native';
 import { router, Stack } from 'expo-router';
 import { useFocusEffect } from '@react-navigation/native';
@@ -66,6 +66,14 @@ export default function ProfileScreen() {
   const { configs, fetchConfigs } = useSearchConfigs();
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const analyzingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearAnalyzingTimeout = useCallback(() => {
+    if (analyzingTimeoutRef.current) {
+      clearTimeout(analyzingTimeoutRef.current);
+      analyzingTimeoutRef.current = null;
+    }
+  }, []);
 
   const activeCount = configs.filter((c) => c.isActive).length;
 
@@ -79,10 +87,17 @@ export default function ProfileScreen() {
   // ── useUploadCV : écoute CV_PARSED pour désactiver l'état « analyse » ─────
   const { isUploading, progress, pickAndUpload } = useUploadCV({
     onParsed: useCallback(() => {
+      clearAnalyzingTimeout();
       setIsAnalyzing(false);
       void fetchProfile(); // rafraîchit le profil après analyse IA
-    }, [fetchProfile]),
+    }, [fetchProfile, clearAnalyzingTimeout]),
   });
+
+  useEffect(() => {
+    return () => {
+      clearAnalyzingTimeout();
+    };
+  }, [clearAnalyzingTimeout]);
 
   // ── Pull-to-refresh ────────────────────────────────────────────────────────
   const handleRefresh = useCallback(async () => {
@@ -97,14 +112,23 @@ export default function ProfileScreen() {
   // ── Upload CV ──────────────────────────────────────────────────────────────
   const handleUpload = useCallback(async () => {
     try {
+      clearAnalyzingTimeout();
       const url = await pickAndUpload();
       if (url) {
         setIsAnalyzing(true); // upload OK → attente SSE CV_PARSED
+        analyzingTimeoutRef.current = setTimeout(() => {
+          setIsAnalyzing(false);
+          void fetchProfile();
+        }, 30000);
+      } else {
+        setIsAnalyzing(false);
       }
     } catch {
+      clearAnalyzingTimeout();
+      setIsAnalyzing(false);
       Alert.alert(t('common.error'), t('profile.uploadCvError'));
     }
-  }, [pickAndUpload, t]);
+  }, [pickAndUpload, t, fetchProfile, clearAnalyzingTimeout]);
 
   // ── Données dérivées ───────────────────────────────────────────────────────
   const skills = (profile?.skills ?? [])
