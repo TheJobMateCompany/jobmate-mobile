@@ -8,7 +8,26 @@
  * Le JWT est injecté automatiquement depuis SecureStore à chaque requête.
  */
 
-const API_URL = 'https://api.meelkyway.com/graphql';
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
+
+function getApiBase(): string {
+  // Priority: EXPO_PUBLIC_API_URL env var -> expo constants extra.API_URL -> emulator defaults
+  const env =
+    process.env.EXPO_PUBLIC_API_URL ??
+    (Constants?.expoConfig?.extra?.API_URL as string | undefined);
+  if (env && env.length > 0) return env.replace(/\/$/, '');
+  // Default to the host machine IP when testing with a physical device on the same Wi-Fi
+  // (user requested hardcoded IP). This can still be overridden by EXPO_PUBLIC_API_URL.
+  const host = '172.20.10.2';
+  return `http://${host}:4000`;
+}
+
+const API_URL = `${getApiBase()}/graphql`;
+// Debug: print resolved API endpoint at startup
+// This helps verify what the app is attempting to reach in different environments
+// (emulator, simulator, physical device, or when EXPO_PUBLIC_API_URL is set).
+console.log('[gqlClient] Resolved API_URL ->', API_URL);
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

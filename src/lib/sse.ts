@@ -6,6 +6,8 @@
  * qui n'est pas support� dans RN).
  */
 
+import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 import EventSource from 'react-native-sse';
 import { getToken } from './storage';
 
@@ -136,6 +138,19 @@ export class SSEClient {
 
 // --- Instance singleton ---------------------------------------------------------
 
+function getEventsBase(): string {
+  const env =
+    process.env.EXPO_PUBLIC_API_URL ??
+    (Constants?.expoConfig?.extra?.API_URL as string | undefined);
+  if (env && env.length > 0) return env.replace(/\/$/, '');
+  // Default to the host machine IP for physical device testing on the same Wi-Fi.
+  const host = '172.20.10.2';
+  return `http://${host}:4000`;
+}
+
+const _eventsBase = getEventsBase();
+console.log('[sse] Resolved events base ->', _eventsBase);
+
 export const sseClient = new SSEClient({
-  baseUrl: 'https://api.meelkyway.com/events',
+  baseUrl: `${_eventsBase}/events`,
 });

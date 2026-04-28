@@ -102,6 +102,15 @@ Déclencheurs:
 
 Ce workflow démarre un build EAS non interactif (`--no-wait`).
 
+## Connecting to local backend
+
+- If you're running the backend locally via Docker Compose (Gateway exposed on `localhost:4000`), the mobile app must point to the host IP for network requests.
+- Android Emulator (default): use `http://10.0.2.2:4000` as the host URL.
+- iOS Simulator: use `http://localhost:4000`.
+- Physical device: find your machine IP (e.g., `192.168.1.100`) and use `http://<HOST_IP>:4000`.
+
+When using SSE, the endpoint is `GET /events?token=<jwt>`; ensure the device/emulator can reach the host and that any local firewall allows incoming connections on port `4000`.
+
 ## Configuration EAS
 
 Le fichier `eas.json` définit 2 profils:
